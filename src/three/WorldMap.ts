@@ -17,10 +17,11 @@ import {
   BufferGeometry,
 } from 'three'
 
-const DEFAULT_LAND_COLOR = '#6ac48a'
+const DEFAULT_LAND_COLOR = '#1B7319'
+const DEFAULT_BORDER_COLOR = '#ffffff'
 
 type GeoJsonGeometry =
-  | {
+  | { 
       type: 'Polygon'
       coordinates: number[][][]
     }
@@ -95,19 +96,18 @@ export class WorldMap {
     this.centerMesh()
   }
 
-  // in WorldMap.ts
-private lonLatToXY(lon: number, lat: number): Vector2 {
-  // Längengrad: -180..180 → -1..1
-  const x = lon / 180
-  // Breitengrad: -90..90 → -1..1
-  const y = lat / 90
+  private lonLatToXY(lon: number, lat: number): Vector2 {
+    // Längengrad: -180..180 → -1..1
+    const x = lon / 180
+    // Breitengrad: -90..90 → -1..1
+    const y = lat / 90
 
-  // Optional: leicht strecken, damit es eher 2:1 wirkt
-  const worldScaleX = 1.8
-  const worldScaleY = 1.0
+    // Optional: leicht strecken, damit es eher 2:1 wirkt
+    const worldScaleX = 1.8
+    const worldScaleY = 1.0
 
-  return new Vector2(x * worldScaleX, y * worldScaleY)
-}
+    return new Vector2(x * worldScaleX, y * worldScaleY)
+  }
 
   private addPolygon(
     group: Group,
@@ -129,6 +129,7 @@ private lonLatToXY(lon: number, lat: number): Vector2 {
         shape.lineTo(x, y)
       }
     })
+    shape.closePath()
 
     for (const hole of holes) {
       if (hole.length < 3) continue
@@ -141,35 +142,70 @@ private lonLatToXY(lon: number, lat: number): Vector2 {
           path.lineTo(x, y)
         }
       })
+      path.closePath()
       shape.holes.push(path)
     }
 
     const geometry = new ShapeGeometry(shape)
     const mesh = new Mesh(geometry, material)
     group.add(mesh)
+
+    // Füge Grenzen als Linien hinzu
+    this.addPolygonBorders(group, outerRing)
+    for (const hole of holes) {
+      this.addPolygonBorders(group, hole)
+    }
   }
 
+  private addPolygonBorders(group: Group, ring: number[][]) {
+    if (ring.length < 2) return
 
+    const positions: number[] = []
+    ring.forEach(([lon, lat]) => {
+      const { x, y } = this.lonLatToXY(lon, lat)
+      positions.push(x, y, 0.01) // Leicht über der Oberfläche
+    })
+    // Schließe den Ring
+    const [firstLon, firstLat] = ring[0]
+    const { x, y } = this.lonLatToXY(firstLon, firstLat)
+    positions.push(x, y, 0.01)
 
-private addLineString(group: Group, coords: number[][]) {
-  if (coords.length < 2) return
+    const geometry = new BufferGeometry()
+    geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
 
-  const positions: number[] = []
-  coords.forEach(([lon, lat]) => {
-    const { x, y } = this.lonLatToXY(lon, lat)
-    positions.push(x, y, 0)
-  })
+    const line = new Line(
+      geometry,
+      new LineBasicMaterial({
+        color: DEFAULT_BORDER_COLOR,
+        linewidth: 1,
+      }),
+    )
 
-  const geometry = new BufferGeometry()
-  geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
+    group.add(line)
+  }
 
-  const line = new Line(
-    geometry,
-    new LineBasicMaterial({ color: 0x6ac48a, linewidth: 1 }),
-  )
+  private addLineString(group: Group, coords: number[][]) {
+    if (coords.length < 2) return
 
-  group.add(line)
-}
+    const positions: number[] = []
+    coords.forEach(([lon, lat]) => {
+      const { x, y } = this.lonLatToXY(lon, lat)
+      positions.push(x, y, 0.01)
+    })
+
+    const geometry = new BufferGeometry()
+    geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
+
+    const line = new Line(
+      geometry,
+      new LineBasicMaterial({
+        color: DEFAULT_BORDER_COLOR,
+        linewidth: 1,
+      }),
+    )
+
+    group.add(line)
+  }
 
   private centerMesh() {
     const box = new Box3().setFromObject(this.mesh)
@@ -190,10 +226,9 @@ private addLineString(group: Group, coords: number[][]) {
     const visibleHeight = 2 * Math.tan(verticalFovInRad / 2) * distance
     const visibleWidth = visibleHeight * camera.aspect
 
-    const scaleFactor = Math.min(
-      visibleWidth / this.baseSize.x,
-      visibleHeight / this.baseSize.y,
-    )
+    // Füge einen kleinen Rand hinzu (90% der sichtbaren Fläche)
+   
+    const scaleFactor = Math.min(visibleWidth / this.baseSize.x, visibleHeight / this.baseSize.y);
 
     this.mesh.scale.setScalar(scaleFactor)
   }

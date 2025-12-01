@@ -30,7 +30,7 @@ export class SceneManager {
 
     // Scene
     this.scene = new Scene()
-    this.scene.background = new Color(0x0b1020)
+    this.scene.background = new Color('#1597E8')
 
     // Camera
     this.camera = new PerspectiveCamera(
