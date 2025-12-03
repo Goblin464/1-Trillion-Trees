@@ -24,12 +24,16 @@ export function ControlsPanel() {
       style={{
         width: "280px",
         padding: "18px",
-        background: "rgba(20,20,30,0.9)",
+        background: "rgba(218, 218, 243, 0.34)",
         color: "white",
-        borderRadius: "14px",
+        borderRadius: "40px",
         display: "flex",
         flexDirection: "column",
         gap: "20px",
+        zIndex: 1,
+        bottom: "5vh",
+        left: "5vh",
+        position: "absolute"
       }}
     >
       <h2 style={{ margin: 0, fontSize: "20px" }}>Simulation Controls</h2>
