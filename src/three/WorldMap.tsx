@@ -1,5 +1,5 @@
 import { useThree } from '@react-three/fiber'
-import React, { useMemo, useEffect, useRef } from 'react'
+import { useMemo, useEffect, useRef } from 'react'
 import {
   Group,
   Box3,
@@ -22,7 +22,7 @@ type GeoJsonFeatureCollection = {
 
 interface WorldMapProps {
   geoJson: GeoJsonFeatureCollection;
-  onCountryClick?: (countryProps: any) => void
+  onCountryClick?: (countryProps: any, screenPos: { x: number; y: number }) => void
 }
 
 export function WorldMap({ geoJson, onCountryClick }: WorldMapProps) {
@@ -32,9 +32,7 @@ export function WorldMap({ geoJson, onCountryClick }: WorldMapProps) {
   const { camera, size } = useThree()
   const perspectiveCamera = camera as PerspectiveCamera
 
-  // -----------------------------------
-  // Create R3F components for each polygon
-  // -----------------------------------
+
   const polygons = useMemo(
     () =>
       geoJson.features.flatMap((feature, index) => {
@@ -43,6 +41,14 @@ export function WorldMap({ geoJson, onCountryClick }: WorldMapProps) {
 
         if (!geom) return []
 
+        const handleClick = (props: any, position: Vector3) => {
+        if (!position) return
+        const vector = position.clone().project(perspectiveCamera)
+        const x = ((vector.x + 1) / 2) * size.width
+        const y = ((-vector.y + 1) / 2) * size.height
+        onCountryClick?.(props, { x, y })
+      }
+
         if (geom.type === "Polygon") {
           return (
             <CountryPolygon
@@ -50,9 +56,7 @@ export function WorldMap({ geoJson, onCountryClick }: WorldMapProps) {
               rings={geom.coordinates}
               properties={feature.properties}
               color={color}
-              onClick={() => {onCountryClick?.(feature.properties)
-                console.log('Clicked:', feature.properties)
-              }}
+             onClick={handleClick}
             />
           )
         }
@@ -64,7 +68,7 @@ export function WorldMap({ geoJson, onCountryClick }: WorldMapProps) {
               rings={poly}
               properties={feature.properties}
               color={color}
-              onClick={() => onCountryClick?.(feature.properties)}
+              onClick={handleClick}
             />
           ))
         }

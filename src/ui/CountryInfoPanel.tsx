@@ -1,19 +1,20 @@
-import React from 'react';
+
 
 interface CountryInfoPanelProps {
   country: any; // Typisieren z. B. mit interface CountryProperties
+  position: {x: number, y : number} | null
   onClose?: () => void;
 }
 
-export function CountryInfoPanel({ country, onClose }: CountryInfoPanelProps) {
-  if (!country) return null;
-
+export function CountryInfoPanel({ country, position, onClose }: CountryInfoPanelProps) {
+  if (!country|| !position) return null;
   return (
+
     <div
       style={{
         position: 'absolute',
-        top: 20,
-        right: 20,
+        top: position.y,
+        left: position.x,
         background: 'rgba(0,0,0,0.7)',
         color: 'white',
         padding: '10px 20px',
