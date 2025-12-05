@@ -32,7 +32,9 @@ export function WorldMap({ geoJson, onCountryClick }: WorldMapProps) {
   const { camera, size } = useThree()
   const perspectiveCamera = camera as PerspectiveCamera
 
-
+  // -----------------------------------
+  // Building Map
+  // -----------------------------------
   const polygons = useMemo(
     () =>
       geoJson.features.flatMap((feature, index) => {
@@ -42,12 +44,12 @@ export function WorldMap({ geoJson, onCountryClick }: WorldMapProps) {
         if (!geom) return []
 
         const handleClick = (props: any, position: Vector3) => {
-        if (!position) return
-        const vector = position.clone().project(perspectiveCamera)
-        const x = ((vector.x + 1) / 2) * size.width
-        const y = ((-vector.y + 1) / 2) * size.height
-        onCountryClick?.(props, { x, y })
-      }
+          if (!position) return
+          const vector = position.clone().project(perspectiveCamera)
+          const x = ((vector.x + 1) / 2) * size.width
+          const y = ((-vector.y + 1) / 2) * size.height
+          onCountryClick?.(props, { x, y })
+        }
 
         if (geom.type === "Polygon") {
           return (
@@ -56,7 +58,7 @@ export function WorldMap({ geoJson, onCountryClick }: WorldMapProps) {
               rings={geom.coordinates}
               properties={feature.properties}
               color={color}
-             onClick={handleClick}
+              onClick={handleClick}
             />
           )
         }
@@ -82,7 +84,8 @@ export function WorldMap({ geoJson, onCountryClick }: WorldMapProps) {
   // Centering
   // -----------------------------------
   useEffect(() => {
-    if (!meshRef.current) return
+    if (!meshRef.current) 
+    return
 
     const box = new Box3().setFromObject(meshRef.current)
     const center = box.getCenter(new Vector3())

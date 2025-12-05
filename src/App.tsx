@@ -4,6 +4,7 @@ import { WorldMap } from "./three/WorldMap"
 import { ControlsPanel } from "./ui/ControlsPanel"
 import worldGeoJsonRaw from './assets/worldMapV2.geojson?raw'
 import { CountryInfoPanel } from "./ui/CountryInfoPanel"
+import { SimulationInfoPanel } from "./ui/SimulationInfoPanel"
 
 export function App() {
   const [selectedCountry, setSelectedCountry] = useState<any>(null);
@@ -57,6 +58,7 @@ export function App() {
         }}
       />
       <ControlsPanel></ControlsPanel>
+      <SimulationInfoPanel></SimulationInfoPanel>
     </div>
   )
 }
