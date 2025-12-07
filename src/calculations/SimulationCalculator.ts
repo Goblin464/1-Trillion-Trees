@@ -12,7 +12,7 @@ export class SimulationCalculator {
   }
 
   // CO2-Absorption durch alle bisher gepflanzten Bäume
-  static applyReforestationEffect(currentCO2: number, totalTreesPlanted: number, absorptionPerTree: number = 0.00000002): number {
+  static applyReforestationEffect(currentCO2: number, totalTreesPlanted: number, absorptionPerTree: number = 0.002): number {
     return currentCO2 - totalTreesPlanted * absorptionPerTree;
   }
 

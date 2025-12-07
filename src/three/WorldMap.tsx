@@ -1,5 +1,6 @@
 import { useThree } from '@react-three/fiber'
-import { useMemo, useEffect, useRef } from 'react'
+import { useMemo, useEffect, useRef, useState } from 'react'
+
 import {
   Group,
   Box3,
@@ -7,6 +8,8 @@ import {
   PerspectiveCamera
 } from 'three'
 import { CountryPolygon } from './CountryPolygon'
+
+
 
 type GeoJsonFeatureCollection = {
   type: 'FeatureCollection'
@@ -22,10 +25,11 @@ type GeoJsonFeatureCollection = {
 
 interface WorldMapProps {
   geoJson: GeoJsonFeatureCollection;
+  temperatures: Record<string, number>;
   onCountryClick?: (countryProps: any, screenPos: { x: number; y: number }) => void
 }
 
-export function WorldMap({ geoJson, onCountryClick }: WorldMapProps) {
+export function WorldMap({ geoJson, temperatures, onCountryClick }: WorldMapProps) {
   const meshRef = useRef<Group>(null!)
   const baseSize = useRef<Vector3 | null>(null)
 
@@ -40,6 +44,17 @@ export function WorldMap({ geoJson, onCountryClick }: WorldMapProps) {
       geoJson.features.flatMap((feature, index) => {
         const geom = feature.geometry
         const color = feature.properties?.color as string | undefined
+        
+        //add property temperature to feature
+        const iso = (feature.properties?.iso ?? feature.properties?.iso3 ?? feature.properties?.ISO3) as string | undefined
+        const temp = iso && iso in temperatures ? temperatures[iso] : undefined
+        feature.properties = { ...feature.properties, temperature: temp }
+
+
+        feature.properties = {
+          ...feature.properties,
+          temperature: temp
+        }
 
         if (!geom) return []
 
@@ -84,15 +99,17 @@ export function WorldMap({ geoJson, onCountryClick }: WorldMapProps) {
   // Centering
   // -----------------------------------
   useEffect(() => {
-    if (!meshRef.current) 
-    return
+    if (!meshRef.current)
+      return
 
     const box = new Box3().setFromObject(meshRef.current)
     const center = box.getCenter(new Vector3())
     meshRef.current.position.sub(center)
 
     baseSize.current = box.getSize(new Vector3())
+
   }, [polygons])
+
 
 
   // -----------------------------------

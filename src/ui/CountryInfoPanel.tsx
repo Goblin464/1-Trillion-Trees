@@ -40,6 +40,7 @@ export function CountryInfoPanel({ country, position, onClose }: CountryInfoPane
 
       <h2>{country.name}</h2>
       {country.population && <p>Population: {country.population.toLocaleString()}</p>}
+       {country.iso && <p>Average Temerature: {country.temperature}</p>}
       {country.iso && <p>ISO-Code: {country.iso}</p>}
     </div>
   );

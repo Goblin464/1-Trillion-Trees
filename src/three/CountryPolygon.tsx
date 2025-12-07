@@ -99,8 +99,6 @@ export function CountryPolygon({ rings, properties, color, onClick }: CountryPol
                     const worldCenter = localCenter.clone()
                     event.object.localToWorld(worldCenter) 
                     onClick(properties, worldCenter)   
-                    console.log(worldCenter)
-
                 }}
             />
 

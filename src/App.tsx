@@ -5,11 +5,14 @@ import { ControlsPanel } from "./ui/ControlsPanel"
 import worldGeoJsonRaw from './assets/worldMapV2.geojson?raw'
 import { CountryInfoPanel } from "./ui/CountryInfoPanel"
 import { SimulationInfoPanel } from "./ui/SimulationInfoPanel"
+import { useTemperatures } from "./store/temperatureProvider"
+
 
 export function App() {
   const [selectedCountry, setSelectedCountry] = useState<any>(null);
   const [countryPanelPos, setCountryPanelPos] = useState<{ x: number, y: number } | null>(null);
-  // GeoJSON parsen und Antarktis entfernen
+  const temperatures = useTemperatures()
+  
   const worldGeoJson = useMemo(() => {
     const parsed = JSON.parse(worldGeoJsonRaw) as any
     parsed.features = parsed.features
@@ -41,8 +44,10 @@ export function App() {
       >
         <ambientLight intensity={0.3} />
         <directionalLight position={[5, 5, 5]} />
+        
         <WorldMap
           geoJson={worldGeoJson}
+          temperatures={temperatures}
           onCountryClick={(props, screenPos) => {
             setSelectedCountry(props);
             setCountryPanelPos(screenPos);
