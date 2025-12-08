@@ -1,33 +1,31 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Papa from "papaparse";
 import temperatureDataRaw from '../assets/temperatureData.csv?raw'
+import { useSimulationStore } from "../store/SimulationStore";
 
-export function useTemperatures() {
-  const [temperatures, setTemperatures] = useState<Record<string, number>>({})
+export function useLoadBaseTemperatures() {
+  const setBaseTemperatures = useSimulationStore(s => s.setBaseTemperatures);
+  const setTemperatures = useSimulationStore(s => s.setTemperatures);
 
   useEffect(() => {
     Papa.parse(temperatureDataRaw, {
       download: false,
-      header: false,     // weil deine CSV keine Header hat
+      header: false,
       skipEmptyLines: true,
       complete(result) {
-        const rows = result.data as string[][]
-        const map: Record<string, number> = {}
-
-        rows.forEach((row) => {
-          const iso = row[5]      // Spalte ISO3 Code
-          const year = row[23]    // Spalte Jahr
-          const value = row[24]   // Spalte Temperatur
-          
+        const rows = result.data as string[][];
+        const baseMap: Record<string, number> = {};
+        rows.forEach(row => {
+          const iso = row[5];        // ISO3
+          const year = row[23];      // Jahr
+          const temp = row[24];      // Temperatur
           if (year === "2022") {
-            map[iso] = Number(value)
+            baseMap[iso] = Number(temp);
           }
-        })
-
-        setTemperatures(map)
+        });
+        setBaseTemperatures(baseMap);
+        setTemperatures(baseMap); // initial auch direkt die aktuelle Temperatur setzen
       }
-    })
-  }, [])
-
-  return temperatures
+    });
+  }, []);
 }

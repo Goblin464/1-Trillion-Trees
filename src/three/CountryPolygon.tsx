@@ -93,6 +93,7 @@ export function CountryPolygon({ rings, properties, color, onClick }: CountryPol
                         side: DoubleSide,
                     })
                 }
+                userData={{ properties }}
                 onClick={(event) => {
                     if (!onClick) return
                     const localCenter = getCenter()        

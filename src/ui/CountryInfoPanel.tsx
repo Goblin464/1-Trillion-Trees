@@ -1,3 +1,4 @@
+import { useSimulationStore } from "../store/SimulationStore";
 
 
 interface CountryInfoPanelProps {
@@ -7,7 +8,13 @@ interface CountryInfoPanelProps {
 }
 
 export function CountryInfoPanel({ country, position, onClose }: CountryInfoPanelProps) {
-  if (!country|| !position) return null;
+ const temperatures = useSimulationStore(s => s.temperatures); // aktuelle dynamische Temperaturen
+
+  if (!country || !position) return null;
+
+  // ISO-Code aus den Properties
+  const iso = country.iso;
+  const temperature = iso ? temperatures[iso] : undefined;
   return (
 
     <div
@@ -40,7 +47,7 @@ export function CountryInfoPanel({ country, position, onClose }: CountryInfoPane
 
       <h2>{country.name}</h2>
       {country.population && <p>Population: {country.population.toLocaleString()}</p>}
-       {country.iso && <p>Average Temerature: {country.temperature}</p>}
+       {iso && <p>Average Temperature: {temperature?.toFixed(2) ?? "N/A"}°C</p>}
       {country.iso && <p>ISO-Code: {country.iso}</p>}
     </div>
   );

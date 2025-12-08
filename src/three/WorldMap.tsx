@@ -1,5 +1,5 @@
 import { useThree } from '@react-three/fiber'
-import { useMemo, useEffect, useRef, useState } from 'react'
+import { useMemo, useEffect, useRef } from 'react'
 
 import {
   Group,
@@ -8,6 +8,8 @@ import {
   PerspectiveCamera
 } from 'three'
 import { CountryPolygon } from './CountryPolygon'
+import { useHeatmap } from './HeatmapController'
+import { useSimulationStore } from '../store/SimulationStore'
 
 
 
@@ -32,7 +34,7 @@ interface WorldMapProps {
 export function WorldMap({ geoJson, temperatures, onCountryClick }: WorldMapProps) {
   const meshRef = useRef<Group>(null!)
   const baseSize = useRef<Vector3 | null>(null)
-
+  const heatmapEnabled = useSimulationStore(s => s.liveSettings.heatmapEnabled);
   const { camera, size } = useThree()
   const perspectiveCamera = camera as PerspectiveCamera
 
@@ -45,17 +47,7 @@ export function WorldMap({ geoJson, temperatures, onCountryClick }: WorldMapProp
         const geom = feature.geometry
         const color = feature.properties?.color as string | undefined
         
-        //add property temperature to feature
-        const iso = (feature.properties?.iso ?? feature.properties?.iso3 ?? feature.properties?.ISO3) as string | undefined
-        const temp = iso && iso in temperatures ? temperatures[iso] : undefined
-        feature.properties = { ...feature.properties, temperature: temp }
-
-
-        feature.properties = {
-          ...feature.properties,
-          temperature: temp
-        }
-
+        
         if (!geom) return []
 
         const handleClick = (props: any, position: Vector3) => {
@@ -94,6 +86,12 @@ export function WorldMap({ geoJson, temperatures, onCountryClick }: WorldMapProp
       }),
     [geoJson]
   )
+
+ useHeatmap({
+  group: meshRef.current,
+  temperatures,
+  enabled: heatmapEnabled
+});
 
   // -----------------------------------
   // Centering
