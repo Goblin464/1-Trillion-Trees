@@ -14,21 +14,27 @@ type LiveSettings = {
   heatmapEnabled: boolean;
 };
 
+export const INITIAL_YEAR_DATA = {
+  co2: 415,
+  treesPlanted: 0,
+  temperatureIncrease: SimulationCalculator.calculateTemperatureIncrease(415),
+};
+
 type SimulationStore = {
   liveSettings: LiveSettings;
-
-  startSettings: {
-    year: number;
-    co2GrowthRate: number;
-    reforestationBudget: number;
-    heatmapEnabled: boolean;
-  };
-
   yearlyResult: YearlyData;
+
   temperatures: Record<string, number>; // ISO3 -> aktualisierte Temperatur
   baseTemperatures: Record<string, number>; // ISO3 -> Basis-Temperatur
+
+  coEmissionsPerCapita: Record<string ,number>;
+  baseCoEmissionsPerCapita: Record<string ,number>; // Basiswerte
+
   setTemperatures: (temps: Record<string, number>) => void;
   setBaseTemperatures: (temps: Record<string, number>) => void;
+
+  setCoEmissionsPerCapita: (emissions: Record<string, number>) => void;
+  setBaseCoEmissionsPerCapita: (emissions: Record<string, number>) => void;
 
   setYear: (year: number) => void;
   setCo2GrowthRate: (v: number) => void;
@@ -37,6 +43,7 @@ type SimulationStore = {
 
   computeYear: (year: number) => YearlyData;
   updateTemperatures: () => void;
+  updateCoEmissionsPerCapita: () => void;
   update: () => void;
 };
 
@@ -48,24 +55,19 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
     heatmapEnabled: false,
   },
 
-  startSettings: {
-    year: 2025,
-    co2GrowthRate: 1.5,
-    reforestationBudget: 50,
-    heatmapEnabled: false,
-  },
-
-  yearlyResult: {
-    co2: 415,
-    treesPlanted: 0,
-    temperatureIncrease: SimulationCalculator.calculateTemperatureIncrease(415),
-  },
+  yearlyResult: INITIAL_YEAR_DATA,
 
   temperatures: {},
   baseTemperatures: {},
 
+  coEmissionsPerCapita: {},
+  baseCoEmissionsPerCapita: {},
+
   setBaseTemperatures: (temps) => set({ baseTemperatures: temps }),
   setTemperatures: (temps) => set({ temperatures: temps }),
+
+  setBaseCoEmissionsPerCapita: (emissions) => set({ baseCoEmissionsPerCapita: emissions }),
+  setCoEmissionsPerCapita: (emissions) => set({ coEmissionsPerCapita: emissions }),
 
   setYear: (year: number) => {
     set(state => ({ liveSettings: { ...state.liveSettings, year } }));
@@ -83,20 +85,13 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
   },
 
   setHeatmapEnabled: (value: boolean) => {
-    set((state) => ({
-      liveSettings: { ...state.liveSettings, heatmapEnabled: value }
-    }));
+    set((state) => ({ liveSettings: { ...state.liveSettings, heatmapEnabled: value } }));
     if (get().liveSettings.year > 2025) get().update();
   },
 
   computeYear: (year: number): YearlyData => {
     const { liveSettings } = get();
-
-    let previous: YearlyData = {
-      co2: 500,
-      treesPlanted: 0,
-      temperatureIncrease: SimulationCalculator.calculateTemperatureIncrease(500),
-    };
+    let previous = INITIAL_YEAR_DATA;
 
     if (year === 2025) return previous;
 
@@ -111,27 +106,34 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
     return previous;
   },
 
-  // -------------------------------
-  // Neue Funktion: Temperaturen anpassen
-  // -------------------------------
   updateTemperatures: () => {
     const { baseTemperatures, yearlyResult } = get();
     const updated: Record<string, number> = {};
     for (const iso in baseTemperatures) {
       updated[iso] = baseTemperatures[iso] + yearlyResult.temperatureIncrease;
     }
-    
     set({ temperatures: updated });
   },
 
-  // -------------------------------
-  // Update Jahresdaten + Temperaturen
-  // -------------------------------
+  updateCoEmissionsPerCapita: () => {
+    const { baseCoEmissionsPerCapita, liveSettings } = get();
+    const updated: Record<string, number> = {};
+    const yearsSinceBase = liveSettings.year - 2025;
+    const growthFactor = 1 + liveSettings.co2GrowthRate / 100;
+
+    for (const iso in baseCoEmissionsPerCapita) {
+      // exponentielles Wachstum über die Jahre
+      updated[iso] = baseCoEmissionsPerCapita[iso] * Math.pow(growthFactor, yearsSinceBase);
+    }
+
+    set({ coEmissionsPerCapita: updated });
+  },
+
   update: () => {
     const year = get().liveSettings.year;
     const result = get().computeYear(year);
     set({ yearlyResult: result });
-
-    get().updateTemperatures(); // <-- Temperaturen werden dynamisch angepasst
+    get().updateTemperatures();
+    get().updateCoEmissionsPerCapita();
   },
 }));

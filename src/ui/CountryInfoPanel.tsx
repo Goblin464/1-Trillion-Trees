@@ -3,18 +3,19 @@ import { useSimulationStore } from "../store/SimulationStore";
 
 interface CountryInfoPanelProps {
   country: any; // Typisieren z. B. mit interface CountryProperties
-  position: {x: number, y : number} | null
+  position: { x: number, y: number } | null
   onClose?: () => void;
 }
 
 export function CountryInfoPanel({ country, position, onClose }: CountryInfoPanelProps) {
- const temperatures = useSimulationStore(s => s.temperatures); // aktuelle dynamische Temperaturen
-
+  const temperatures = useSimulationStore(s => s.temperatures); // aktuelle dynamische Temperaturen
+  const emissions = useSimulationStore(s => s.coEmissionsPerCapita);
   if (!country || !position) return null;
 
   // ISO-Code aus den Properties
   const iso = country.iso;
   const temperature = iso ? temperatures[iso] : undefined;
+  const emission = iso ? emissions[iso] : undefined;
   return (
 
     <div
@@ -42,12 +43,13 @@ export function CountryInfoPanel({ country, position, onClose }: CountryInfoPane
           cursor: 'pointer'
         }}
       >
-        
+
       </button>
 
       <h2>{country.name}</h2>
       {country.population && <p>Population: {country.population.toLocaleString()}</p>}
-       {iso && <p>Average Temperature: {temperature?.toFixed(2) ?? "N/A"}°C</p>}
+      {iso && <p>Average Temperature: {temperature?.toFixed(2) ?? "N/A"}°C</p>}
+      {iso && <p>Co2 Emissions Per Capita: {emission} t</p>}
       {country.iso && <p>ISO-Code: {country.iso}</p>}
     </div>
   );

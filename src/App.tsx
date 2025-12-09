@@ -63,6 +63,8 @@ export function App() {
           setCountryPanelPos(null)
         }}
       />
+    
+
       <ControlsPanel></ControlsPanel>
       <SimulationInfoPanel></SimulationInfoPanel>
     </div>

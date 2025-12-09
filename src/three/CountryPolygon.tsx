@@ -14,7 +14,7 @@ import {
 
 
 const DEFAULT_LAND_COLOR = '#1B7319'
-const DEFAULT_BORDER_COLOR = '#ffffff'
+//const DEFAULT_BORDER_COLOR = '#ffffffff'
 
 export interface CountryPolygonProps {
     rings: number[][][]      // GeoJSON rings
@@ -108,7 +108,7 @@ export function CountryPolygon({ rings, properties, color, onClick }: CountryPol
             {borderGeometry && (
                 <lineLoop
                     geometry={borderGeometry}
-                    material={new LineBasicMaterial({ color: DEFAULT_BORDER_COLOR })}
+                    material={new LineBasicMaterial({ color: 0x00000 })} // default color is white but with black it shows better on ehatmap
                 />
 
 
