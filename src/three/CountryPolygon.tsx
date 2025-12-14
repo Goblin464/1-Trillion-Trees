@@ -62,6 +62,7 @@ export function CountryPolygon({ rings, properties, color, onClick }: CountryPol
         shape.closePath()
 
         return new ShapeGeometry(shape)
+        
     }, [rings])
 
 
@@ -93,13 +94,13 @@ export function CountryPolygon({ rings, properties, color, onClick }: CountryPol
                         side: DoubleSide,
                     })
                 }
-                userData={{ properties }}
+                userData={{ properties}}
                 onClick={(event) => {
                     if (!onClick) return
-                    const localCenter = getCenter()        
+                    const localCenter = getCenter()
                     const worldCenter = localCenter.clone()
-                    event.object.localToWorld(worldCenter) 
-                    onClick(properties, worldCenter)   
+                    event.object.localToWorld(worldCenter)
+                    onClick(properties, worldCenter)
                 }}
             />
 

@@ -5,15 +5,16 @@ import { ControlsPanel } from "./ui/ControlsPanel"
 import worldGeoJsonRaw from './assets/worldMapV2.geojson?raw'
 import { CountryInfoPanel } from "./ui/CountryInfoPanel"
 import { SimulationInfoPanel } from "./ui/SimulationInfoPanel"
-import { useLoadBaseTemperatures } from "./store/temperatureProvider"
+import { useLoadData } from "./store/DataProvider"
 import { useSimulationStore } from "./store/SimulationStore"
+
 
 
 export function App() {
   const [selectedCountry, setSelectedCountry] = useState<any>(null);
   const [countryPanelPos, setCountryPanelPos] = useState<{ x: number, y: number } | null>(null);
 
-  useLoadBaseTemperatures()
+  useLoadData()
   const temperatures = useSimulationStore(s => s.temperatures);
   const worldGeoJson = useMemo(() => {
     const parsed = JSON.parse(worldGeoJsonRaw) as any
@@ -43,9 +44,8 @@ export function App() {
         camera={{ position: [0, 0, 5], fov: 45 }}
         style={{ position: "absolute", top: 0, left: 0, zIndex: 0, background: "#4DA6FF" }}
       >
-        <ambientLight intensity={0.3} />
+        <ambientLight intensity={4} />
         <directionalLight position={[5, 5, 5]} />
-
         <WorldMap
           geoJson={worldGeoJson}
           temperatures={temperatures}

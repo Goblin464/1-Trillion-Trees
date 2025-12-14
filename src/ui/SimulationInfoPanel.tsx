@@ -20,7 +20,7 @@ export function SimulationInfoPanel() {
         >
         <div style={{flexDirection: "column", display: "flex", alignItems: "center", gap: "1vh"}}>
             <label>Trees Planted </label>
-            <span> {result.treesPlanted}</span>
+            <span> {result.treesPlantedInHa}</span>
         </div>
         <div style={{flexDirection: "column", display: "flex", alignItems: "center", gap: "1vh"}}>
             <label>GlobalWarming </label>

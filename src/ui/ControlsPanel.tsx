@@ -8,7 +8,7 @@ export function ControlsPanel() {
   const liveSettings = useSimulationStore((s) => s.liveSettings)
 
   const setCO2 = useSimulationStore((s) => s.setCo2GrowthRate)
-  const setReforestationBudget = useSimulationStore((s) => s.setReforestationBudget)
+  const setReforestationBudget = useSimulationStore((s) => s.setReforestationInHa)
   const setYear = useSimulationStore((s) => s.setYear)
   const setHeatmapEnabled = useSimulationStore((s) => s.setHeatmapEnabled)
 
@@ -49,7 +49,7 @@ export function ControlsPanel() {
         <label>CO₂ Growth Rate (% / Year): {liveSettings.co2GrowthRate}</label>
         <input
           type="range"
-          min={0}
+          min={-3}
           max={3}
           step={0.1}
           value={liveSettings.co2GrowthRate}
@@ -59,13 +59,13 @@ export function ControlsPanel() {
       </div>
 
       <div>
-        <label>Forrestation Budget (Mrd $ / Jahr): {liveSettings.reforestationBudget}</label>
+        <label>Forrestation in  mio hectar: {liveSettings.reforestationInHa}</label>
         <input
           type="range"
           min={0}
-          max={200}
-          step={3}
-          value={liveSettings.reforestationBudget}
+          max={14_000_000}
+          step={100}
+          value={liveSettings.reforestationInHa}
           onChange={(e) => setReforestationBudget(Number(e.target.value))}
           style={{ width: "100%" }}
         />

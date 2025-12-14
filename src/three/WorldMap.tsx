@@ -5,10 +5,13 @@ import {
   Group,
   Box3,
   Vector3,
-  PerspectiveCamera
+  PerspectiveCamera,
+  BoxHelper,
+  Object3D
 } from 'three'
 import { CountryPolygon } from './CountryPolygon'
 import { useHeatmap } from './HeatmapController'
+import { useTrees } from './TreesForCountry'
 
 type GeoJsonFeatureCollection = {
   type: 'FeatureCollection'
@@ -29,7 +32,8 @@ interface WorldMapProps {
 }
 
 export function WorldMap({ geoJson, temperatures, onCountryClick }: WorldMapProps) {
-  const meshRef = useRef<Group>(null!)
+  const worldRef = useRef<Group>(null!)
+  const treeRef = useRef<Group>(null!)
   const baseSize = useRef<Vector3 | null>(null)
   const { camera, size } = useThree()
   const perspectiveCamera = camera as PerspectiveCamera
@@ -63,6 +67,7 @@ export function WorldMap({ geoJson, temperatures, onCountryClick }: WorldMapProp
               color={color}
               onClick={handleClick}
             />
+
           )
         }
 
@@ -77,61 +82,74 @@ export function WorldMap({ geoJson, temperatures, onCountryClick }: WorldMapProp
             />
           ))
         }
-
         return []
       }),
     [geoJson]
   )
 
   useHeatmap({
-    group: meshRef.current,
+    group: worldRef.current,
     temperatures,
   });
 
-  // -----------------------------------
-  // Centering
-  // -----------------------------------
-  useEffect(() => {
-    if (!meshRef.current)
-      return
+  useTrees({
+    worldGroupRef: worldRef,
+    treeGroupRef: treeRef
+  });
 
-    const box = new Box3().setFromObject(meshRef.current)
-    const center = box.getCenter(new Vector3())
-    meshRef.current.position.sub(center)
-
-    baseSize.current = box.getSize(new Vector3())
-
-  }, [polygons])
-
-
-
-  // -----------------------------------
-  // Fit to camera
-  // -----------------------------------
-  const fitToCamera = () => {
-    if (!meshRef.current || !baseSize.current) return
-
-    const distance = Math.abs(perspectiveCamera.position.z - meshRef.current.position.z)
-    const verticalFovRad = (perspectiveCamera.fov * Math.PI) / 180
-
-    const visibleHeight = 2 * Math.tan(verticalFovRad / 2) * distance
-    const visibleWidth = visibleHeight * perspectiveCamera.aspect
-
-    const scaleFactor = Math.min(
-      visibleWidth / baseSize.current.x,
-      visibleHeight / baseSize.current.y
-    )
-
-    meshRef.current.scale.setScalar(scaleFactor)
+ useEffect(() => {
+  if (worldRef.current) {
+    fitCameraToWorld(perspectiveCamera, worldRef.current, size);
   }
+}, [worldRef.current, size, perspectiveCamera]);
 
-  useEffect(() => {
-    fitToCamera()
-  }, [polygons, size.width, size.height])
+
+function fitCameraToWorld(camera: PerspectiveCamera, object: Object3D, viewportSize: { width: number; height: number }, offset = 1.) {
+  const boundingBox = new Box3().setFromObject(object)
+
+  if (!boundingBox.isEmpty()) {
+    const center = boundingBox.getCenter(new Vector3())
+    const sizeVec = boundingBox.getSize(new Vector3())
+
+    // Berechne die maximale Dimensionen
+    const maxX = sizeVec.x
+    const maxY = sizeVec.y
+
+    // Berechne die Entfernung, sodass alles sichtbar ist, abhängig von FOV und Aspekt
+    const aspect = viewportSize.width / viewportSize.height
+    const fov = camera.fov * (Math.PI / 180) // in Radians
+
+    let distanceY = (maxY / 2) / Math.tan(fov / 2)
+    let distanceX = (maxX / 2) / (Math.tan(fov / 2) * aspect)
+
+    const distance = Math.max(distanceX, distanceY) * offset
+
+    // Kamera auf Z-Achse setzen 
+    camera.position.set(center.x, center.y, distance)
+    camera.lookAt(center)
+
+    // near und far anpassen
+    camera.near = 0.1
+    camera.far = distance * 4
+    camera.updateProjectionMatrix()
+  }
+}
+
 
   return (
-    <group ref={meshRef}>
-      {polygons}
+    <group>
+      <group ref={worldRef}>{polygons}</group>
+      <group ref={worldRef}>
+        {polygons}
+
+        {worldRef.current && (
+          <primitive object={new BoxHelper(worldRef.current, 0xff0000)} />
+        )}
+      </group>
+
+      <group ref={treeRef} />
+
     </group>
+
   )
 }
