@@ -24,7 +24,7 @@ export function SimulationInfoPanel() {
         </div>
         <div style={{flexDirection: "column", display: "flex", alignItems: "center", gap: "1vh"}}>
             <label>GlobalWarming </label>
-            <span> {result.temperatureIncrease}</span>
+            <span> {result.temperatureIncrease.toFixed(4)}</span>
         </div>
         </div>
     )

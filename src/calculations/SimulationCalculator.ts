@@ -1,12 +1,58 @@
+import { max } from "three/tsl";
 import type { YearlyData } from "../store/SimulationStore";
 
-export function calculateTreeObjects(treesPlantedInHa: number) {
-  if (treesPlantedInHa < 50_000_000) return 1;
-  if (treesPlantedInHa < 200_000_000) return 3;
-  if (treesPlantedInHa < 100_000_0000) return 7;
-  if (treesPlantedInHa < 1_000_000_0000) return 15;
-  return 30;
+export function calculateTreeObjectsPerCountry(
+  treesPlantedInHa: number,
+  forestationPotentials: Record<string, { tco2e: number; ha: number }>
+): Record<string, number> {
+  const result: Record<string, number> = {};
+
+  // Alle Länder, die bepflanzt werden können
+  let remainingCountries = Object.keys(forestationPotentials);
+  const haPerTree = 1000000;
+  let remainingTrees = Math.floor(treesPlantedInHa / haPerTree);
+
+  while (remainingTrees > 0 && remainingCountries.length > 0) {
+    const treesPerCountry = Math.floor(
+      remainingTrees / remainingCountries.length
+    );
+    if (treesPerCountry === 0) break;
+    const nextRound: string[] = [];
+
+    for (const iso of remainingCountries) {
+
+      const potential = forestationPotentials[iso];
+      const trees = treesPerCountry;
+      const maxTrees = Math.floor(potential.ha / haPerTree);
+
+      // WIE VIEL PLATZ IST NOCH?
+      const alreadyAssigned = result[iso] ?? 0;
+      const spaceLeft = maxTrees - alreadyAssigned;
+
+      // WIE VIEL DARF DIESES LAND DIESE RUNDE BEKOMMEN?
+      const treesForThisCountry = Math.min(trees, spaceLeft);
+
+      if (treesForThisCountry > 0) {
+        result[iso] = alreadyAssigned + treesForThisCountry;
+        remainingTrees -= treesForThisCountry;
+      }
+
+      //  Land nur weiter berücksichtigen, wenn noch Platz ist
+      if (result[iso] < maxTrees) {
+        nextRound.push(iso);
+      }
+
+    }
+    console.log("remaining trees" + remainingTrees)
+    remainingCountries = nextRound;
+
+    // Falls keine Länder mehr übrig → Abbruch
+    if (remainingCountries.length === 0) break;
+  }
+
+  return result;
 }
+
 export class SimulationCalculator {
   // CO2 nächstes Jahr
   static calculateNextYearCO2AndEmissions(currentCO2: number, co2GrowthRate: number, globalEmissions: number): { nextCO2: number, nextGlobalEmissions: number } {

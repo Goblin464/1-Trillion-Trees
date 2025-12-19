@@ -3,13 +3,14 @@ import { BufferGeometry, Group, Mesh, Vector3, Raycaster, Box3 } from "three";
 import { useLoader } from "@react-three/fiber";
 import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
 import { useSimulationStore } from "../store/SimulationStore";
-import { calculateTreeObjects } from "../calculations/SimulationCalculator";
+
 import { MTLLoader } from "three/examples/jsm/Addons.js";
+import { calculateTreeObjectsPerCountry } from "../calculations/SimulationCalculator";
 
 // --- Zufälliger Punkt innerhalb Mesh mit Raycasting ---
 function getRandomPointOnMesh(mesh: Mesh): Vector3 {
   const geom = mesh.geometry as BufferGeometry;
-  const pos = geom.attributes.position;
+
 
   // Bounding Box
   geom.computeBoundingBox();
@@ -49,17 +50,16 @@ interface UseTreesProps {
 
 export function useTrees({ worldGroupRef, treeGroupRef }: UseTreesProps) {
   const treeMaterials = useLoader(MTLLoader, '/Lowpoly_tree_sample.mtl')
-  const treeObj = useLoader(OBJLoader, "/Lowpoly_tree_sample.obj",  loader => {
+  const treeObj = useLoader(OBJLoader, "/Lowpoly_tree_sample.obj", loader => {
     treeMaterials.preload()
     loader.setMaterials(treeMaterials)
   });
   const treesByIso = useRef<Map<string, Group[]>>(new Map())
-  const forestationCountries = useSimulationStore(s => s.forestationPotentials);
-  const liveSettings = useSimulationStore(s => s.liveSettings);
+  const forestationPotentials = useSimulationStore(s => s.forestationPotentials);
   const treesPlantedInHa = useSimulationStore(s => s.yearlyResult.treesPlantedInHa);
 
   const forestationCountriesIso = new Set(
-    Object.keys(forestationCountries).slice(0, 10)
+    Object.keys(forestationPotentials).slice(0, 10)
   );
 
   function meshAreaApprox(mesh: Mesh) {
@@ -89,6 +89,11 @@ export function useTrees({ worldGroupRef, treeGroupRef }: UseTreesProps) {
     const treeGroup = treeGroupRef.current
     if (!worldGroup || !treeGroup) return
 
+    const treeCountsByCountry = calculateTreeObjectsPerCountry(
+      treesPlantedInHa,
+      forestationPotentials
+    );
+
     const countryMeshesByIso = new Map<string, Mesh[]>()
 
     worldGroup.traverse(obj => {
@@ -107,16 +112,11 @@ export function useTrees({ worldGroupRef, treeGroupRef }: UseTreesProps) {
 
     for (const [iso, meshes] of countryMeshesByIso.entries()) {
       if (!forestationCountriesIso.has(iso)) continue
-
-      const targetCount = Math.min(
-        calculateTreeObjects(treesPlantedInHa),
-        100
-      )
-
       const existing = treesByIso.current.get(iso) ?? []
-      const delta = targetCount - existing.length
+      const treeCount = treeCountsByCountry[iso];
+      const delta = treeCount - existing.length
 
-      // 🌱 Mehr Bäume nötig
+      //  Mehr Bäume 
       if (delta > 0) {
         const countryMesh = pickWeightedRandomMesh(meshes)
 
@@ -131,7 +131,7 @@ export function useTrees({ worldGroupRef, treeGroupRef }: UseTreesProps) {
         }
       }
 
-      // 🌲 Zu viele Bäume → entfernen
+      //  Zu viele Bäume 
       if (delta < 0) {
         for (let i = 0; i < Math.abs(delta); i++) {
           const tree = existing.pop()

@@ -7,6 +7,7 @@ import { CountryInfoPanel } from "./ui/CountryInfoPanel"
 import { SimulationInfoPanel } from "./ui/SimulationInfoPanel"
 import { useLoadData } from "./store/DataProvider"
 import { useSimulationStore } from "./store/SimulationStore"
+import { TippingPointsPanel } from "./ui/TippingPointsPanel"
 
 
 
@@ -44,7 +45,7 @@ export function App() {
         camera={{ position: [0, 0, 5], fov: 45 }}
         style={{ position: "absolute", top: 0, left: 0, zIndex: 0, background: "#4DA6FF" }}
       >
-        <ambientLight intensity={4} />
+        <ambientLight intensity={5} />
         <directionalLight position={[5, 5, 5]} />
         <WorldMap
           geoJson={worldGeoJson}
@@ -67,6 +68,7 @@ export function App() {
 
       <ControlsPanel></ControlsPanel>
       <SimulationInfoPanel></SimulationInfoPanel>
+      <TippingPointsPanel></TippingPointsPanel>
     </div>
   )
 }

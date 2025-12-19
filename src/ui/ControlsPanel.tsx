@@ -1,88 +1,105 @@
-import { useEffect, useRef } from "react"
-import { useSimulationStore } from "../store/SimulationStore"
-import { animatePanelEnter } from "./animations/UiAnimations"
+import { useRef } from "react";
+import { useSimulationStore } from "../store/SimulationStore";
+
+import { Panel } from "./Panel";
+import { FormControlLabel, Slider } from "@mui/material";
+import { Switch } from "@mui/material";
 
 export function ControlsPanel() {
-  const panelRef = useRef<HTMLDivElement | null>(null)
+  const panelRef = useRef<HTMLDivElement | null>(null);
 
-  const liveSettings = useSimulationStore((s) => s.liveSettings)
+  const liveSettings = useSimulationStore((s) => s.liveSettings);
 
-  const setCO2 = useSimulationStore((s) => s.setCo2GrowthRate)
-  const setReforestationBudget = useSimulationStore((s) => s.setReforestationInHa)
-  const setYear = useSimulationStore((s) => s.setYear)
-  const setHeatmapEnabled = useSimulationStore((s) => s.setHeatmapEnabled)
+  const setCO2 = useSimulationStore((s) => s.setCo2GrowthRate);
+  const setReforestationBudget = useSimulationStore((s) => s.setReforestationInHa);
+  const setYear = useSimulationStore((s) => s.setYear);
+  const setHeatmapEnabled = useSimulationStore((s) => s.setHeatmapEnabled);
 
 
-  useEffect(() => {
-    if (panelRef.current) animatePanelEnter(panelRef.current)
-  }, [])
 
   return (
-    <div
-      ref={panelRef}
-      className="panel"
+    <Panel
+      ref={panelRef} 
+      title="Simulation Controls"
+      defaultCollapsed={true}
       style={{
         width: "280px",
+        position: "absolute",
         bottom: "5vh",
         left: "5vh",
         flexDirection: "column",
       }}
     >
-      <h2 style={{ margin: 0, fontSize: "20px" }}>Simulation Controls</h2>
-
-      <div style={{ marginTop: "10px" }}>
-        <label style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          Heatmap
-          <div className="toggle">
-            <input
-              type="checkbox"
+      {/* Heatmap Toggle */}
+      <div style={{ marginBottom: "10px" }}>
+        <FormControlLabel
+          control={
+            <Switch
               checked={liveSettings.heatmapEnabled}
               onChange={(e) => setHeatmapEnabled(e.target.checked)}
+              color="grey"
+              sx={{
+            ml: 1,
+            mr: 2,
+          }}
             />
-            <span className="slider" />
-          </div>
-        </label>
-      </div>
-
-
-      <div>
-        <label>CO₂ Growth Rate (% / Year): {liveSettings.co2GrowthRate}</label>
-        <input
-          type="range"
-          min={-3}
-          max={3}
-          step={0.1}
-          value={liveSettings.co2GrowthRate}
-          onChange={(e) => setCO2(Number(e.target.value))}
-          style={{ width: "100%" }}
+          }
+          label="Heatmap"
         />
       </div>
 
-      <div>
-        <label>Forrestation in  mio hectar: {liveSettings.reforestationInHa}</label>
-        <input
-          type="range"
+      {/* CO2 Slider */}
+      <div style={{ marginBottom: "10px" }}>
+        <label>Emissions: {liveSettings.co2GrowthRate}</label>
+        <Slider
+          value={liveSettings.co2GrowthRate}
+          min={-3}
+          max={3}
+          step={0.1}
+          onChange={(e, val) => setCO2(val as number)}
+          sx={{
+            color: "grey",
+            ml: 1,
+            mr: 2,
+          }}
+        />
+      </div>
+
+      {/* Reforestation Slider */}
+      <div style={{ marginBottom: "10px" }}>
+        <label>Forestation: {liveSettings.reforestationInHa}</label>
+        <Slider
           min={0}
           max={14_000_000}
           step={100}
           value={liveSettings.reforestationInHa}
-          onChange={(e) => setReforestationBudget(Number(e.target.value))}
-          style={{ width: "100%" }}
+          onChange={(e, val) => setReforestationBudget(val as number)}
+          sx={{
+            color: "grey",
+            ml: 1,
+            mr: 2,
+
+          }}
+
         />
       </div>
 
+      {/* Year Slider */}
       <div>
-        <label>Year: {liveSettings.year}</label>
-        <input
-          type="range"
+        <label>TimeLine: {liveSettings.year}</label>
+        <Slider
           min={2025}
-          max={2100}
+          max={2125}
           step={1}
           value={liveSettings.year}
-          onChange={(e) => setYear(Number(e.target.value))}
-          style={{ width: "100%" }}
+          onChange={(e, val) => setYear(val as number)}
+          sx={{
+            color: "grey",
+            ml: 1,
+            mr: 2,
+          }}
         />
       </div>
-    </div>
-  )
+    </Panel>
+  );
 }

@@ -34,7 +34,7 @@ interface WorldMapProps {
 export function WorldMap({ geoJson, temperatures, onCountryClick }: WorldMapProps) {
   const worldRef = useRef<Group>(null!)
   const treeRef = useRef<Group>(null!)
-  const baseSize = useRef<Vector3 | null>(null)
+  
   const { camera, size } = useThree()
   const perspectiveCamera = camera as PerspectiveCamera
 
@@ -142,9 +142,7 @@ function fitCameraToWorld(camera: PerspectiveCamera, object: Object3D, viewportS
       <group ref={worldRef}>
         {polygons}
 
-        {worldRef.current && (
-          <primitive object={new BoxHelper(worldRef.current, 0xff0000)} />
-        )}
+        
       </group>
 
       <group ref={treeRef} />

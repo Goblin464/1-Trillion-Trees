@@ -19,7 +19,7 @@ export function useHeatmap({ group, temperatures}: HeatmapProps) {
             const props = mesh.userData?.properties || {};
             const iso = props.iso || props.ISO3;
             const temperature = iso ? temperatures[iso] ?? 0 : 0;
-            const baseColor = props.color ?? "#1B7319";
+            const baseColor = props.color ??  "#1B7319";//;'#ff7003'
             (mesh.material as MeshBasicMaterial).color.set(
                 heatmapEnabled ? getHeatmapColor(temperature) : baseColor
             );
