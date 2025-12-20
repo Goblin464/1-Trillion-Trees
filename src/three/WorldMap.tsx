@@ -6,7 +6,6 @@ import {
   Box3,
   Vector3,
   PerspectiveCamera,
-  BoxHelper,
   Object3D
 } from 'three'
 import { CountryPolygon } from './CountryPolygon'

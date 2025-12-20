@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { SimulationCalculator } from "../calculations/SimulationCalculator"
 
+
 export type YearlyData = {
   co2: number;
   treesPlantedInHa: number;
@@ -24,6 +25,7 @@ export const INITIAL_YEAR_DATA = {
 };
 
 type SimulationStore = {
+  allYearlyResults: Record<number, YearlyData>;
   liveSettings: LiveSettings;
   yearlyResult: YearlyData;
 
@@ -35,6 +37,7 @@ type SimulationStore = {
 
   forestationPotentials: Record<string, { tco2e: number; ha: number }>;
 
+  simulationPlaying: Boolean;
   setTemperatures: (temps: Record<string, number>) => void;
   setBaseTemperatures: (temps: Record<string, number>) => void;
 
@@ -47,8 +50,7 @@ type SimulationStore = {
   setCo2GrowthRate: (v: number) => void;
   setReforestationInHa: (v: number) => void;
   setHeatmapEnabled: (v: boolean) => void;
-
-  computeYear: (year: number) => YearlyData;
+  setSimulationPlaying: () => void;
   updateTemperatures: () => void;
   updateCoEmissionsPerCapita: () => void;
   update: () => void;
@@ -61,7 +63,7 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
     reforestationInHa: 50,
     heatmapEnabled: false,
   },
-
+  allYearlyResults: {},
   yearlyResult: INITIAL_YEAR_DATA,
 
   temperatures: {},
@@ -72,6 +74,7 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
 
   forestationPotentials: {},
 
+  simulationPlaying : false,
 
   setBaseTemperatures: (temps) => set({ baseTemperatures: temps }),
   setTemperatures: (temps) => set({ temperatures: temps }),
@@ -79,7 +82,8 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
   setBaseCoEmissionsPerCapita: (emissions) => set({ baseCoEmissionsPerCapita: emissions }),
   setCoEmissionsPerCapita: (emissions) => set({ coEmissionsPerCapita: emissions }),
 
-  setForestationPotentials: (potential) => {set({ forestationPotentials: potential})},
+  setForestationPotentials: (potential) => { set({ forestationPotentials: potential }) },
+  setSimulationPlaying:() => set(s => ({ simulationPlaying: !s.simulationPlaying })),
 
   setYear: (year: number) => {
     set(state => ({ liveSettings: { ...state.liveSettings, year } }));
@@ -101,22 +105,7 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
     if (get().liveSettings.year > 2025) get().update();
   },
 
-  computeYear: (year: number): YearlyData => {
-    const { liveSettings, forestationPotentials: forestationPotential } = get();
-    let previous = INITIAL_YEAR_DATA;
-  
-    if (year === 2025) return previous;
-    for (let y = 2026; y <= year; y++) {
-      previous = SimulationCalculator.simulateYear(
-        previous,
-        liveSettings.co2GrowthRate,
-        liveSettings.reforestationInHa, 
-        forestationPotential
-      );
-    }
 
-    return previous;
-  },
 
   updateTemperatures: () => {
     const { baseTemperatures, yearlyResult } = get();
@@ -141,10 +130,29 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
   },
 
   update: () => {
-    const year = get().liveSettings.year;
-    const result = get().computeYear(year);
-    set({ yearlyResult: result });
+    const { liveSettings } = get();
+    const results: Record<number, YearlyData> = {};
+    let previous = INITIAL_YEAR_DATA;
+
+    for (let year = 2025; year <= 2125; year++) {
+      if (year > 2025) {
+        previous = SimulationCalculator.simulateYear(
+          previous,
+          liveSettings.co2GrowthRate,
+          liveSettings.reforestationInHa,
+          get().forestationPotentials
+        );
+      }
+      results[year] = previous;
+    }
+
+    set({
+      yearlyResult: results[liveSettings.year],
+      allYearlyResults: results
+    });
+
     get().updateTemperatures();
     get().updateCoEmissionsPerCapita();
   },
+
 }));

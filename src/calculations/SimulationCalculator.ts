@@ -1,4 +1,4 @@
-import { max } from "three/tsl";
+
 import type { YearlyData } from "../store/SimulationStore";
 
 export function calculateTreeObjectsPerCountry(

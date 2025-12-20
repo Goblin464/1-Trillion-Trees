@@ -5,10 +5,12 @@ import gsap from "gsap";
 
 export const TippingPointsToast = ({
     name,
+    icon, 
     threshold,
     active
 }: {
     name: string;
+    icon: string;
     threshold: number;
     active: boolean
 }) => {
@@ -49,7 +51,7 @@ export const TippingPointsToast = ({
                 boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
             }}
         >
-            <TriangleAlert></TriangleAlert>   {name} ({threshold.toFixed(1)}°C)
+             {icon}  {name} ({threshold.toFixed(1)}°C)
         </div>
     );
 };
