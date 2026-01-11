@@ -1,4 +1,5 @@
-import { useMemo } from 'react'
+import { Scale } from 'lucide-react'
+import { useMemo, useRef, useState } from 'react'
 import {
     Shape,
     ShapeGeometry,
@@ -9,9 +10,12 @@ import {
     Float32BufferAttribute,
     Vector2,
     Color,
-    Vector3
+    Vector3,
+    Box3,
+    Group,
+    Mesh
 } from 'three'
-
+import gsap from 'gsap'
 
 const DEFAULT_LAND_COLOR = '#1B7319'
 //const DEFAULT_BORDER_COLOR = '#ffffffff'
@@ -25,6 +29,7 @@ export interface CountryPolygonProps {
 
 
 export function CountryPolygon({ rings, properties, color, onClick }: CountryPolygonProps) {
+    const originalZRef = useRef<number>(0);
 
     function lonLatToXY(lon: number, lat: number): Vector2 {
         const x = (lon / 180) * 1.8
@@ -62,7 +67,7 @@ export function CountryPolygon({ rings, properties, color, onClick }: CountryPol
         shape.closePath()
 
         return new ShapeGeometry(shape)
-        
+
     }, [rings])
 
 
@@ -82,38 +87,87 @@ export function CountryPolygon({ rings, properties, color, onClick }: CountryPol
     }, [rings])
 
     if (!shapeGeometry) return null
+    const groupRef = useRef<Group>(null!)
+    const materialRef = useRef<MeshBasicMaterial>(null)
+    const hoverColorRef = useRef<Color | null>(null);
 
     return (
-        <group>
+        <group
+            ref={groupRef}
+            onPointerEnter={(e) => {
+                e.stopPropagation();
+                //save hovered in userData for heatmap
+                const mesh = e.object as Mesh;
+                mesh.userData.isHovered = true;
+
+                if (!groupRef.current || !materialRef.current) return;
+                gsap.killTweensOf(materialRef.current.color);
+              
+                // save color before hover
+                hoverColorRef.current = materialRef.current.color.clone();
+              
+                gsap.to(materialRef.current.color, {
+                    r: 0.2,
+                    g: 0.9,
+                    b: 1,
+                    duration: 0.2,
+                    overwrite: true,
+                });
+            }}
+
+            onPointerLeave={(e) => {
+
+                e.stopPropagation();
+
+                const mesh = e.object as Mesh;
+                mesh.userData.isHovered = false;
+
+                if (!groupRef.current || !materialRef.current || !hoverColorRef.current) return;
+                gsap.killTweensOf(materialRef.current.color);
+
+
+                // Zurück zur Heatmap/Base-Farbe
+                gsap.to(materialRef.current.color, {
+                    r: hoverColorRef.current.r,
+                    g: hoverColorRef.current.g,
+                    b: hoverColorRef.current.b,
+                    duration: 0.0,
+                    overwrite: true,
+                });
+            }}
+
+        >
             {/* Landfläche */}
             <mesh
                 geometry={shapeGeometry}
-                material={
-                    new MeshBasicMaterial({
-                        color: new Color(color ?? DEFAULT_LAND_COLOR),
-                        side: DoubleSide,
-                    })
-                }
-                userData={{ properties}}
+                userData={{ properties }}
                 onClick={(event) => {
+                    event.stopPropagation()
                     if (!onClick) return
+
                     const localCenter = getCenter()
                     const worldCenter = localCenter.clone()
                     event.object.localToWorld(worldCenter)
                     onClick(properties, worldCenter)
                 }}
-            />
-
+            >
+                <meshBasicMaterial
+                    ref={materialRef}
+                    color={new Color(color ?? DEFAULT_LAND_COLOR)}
+                    side={DoubleSide}
+                />
+            </mesh>
 
             {/* Grenzlinien */}
             {borderGeometry && (
                 <lineLoop
+                    renderOrder={1}
                     geometry={borderGeometry}
-                    material={new LineBasicMaterial({ color: 0x00000 })} // default color is white but with black it shows better on ehatmap
+                    material={new LineBasicMaterial({ color: 0x000000 })}
+                    raycast={() => null}
                 />
-
-
             )}
         </group>
     )
+
 }

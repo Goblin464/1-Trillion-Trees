@@ -50,7 +50,7 @@ type SimulationStore = {
   setCo2GrowthRate: (v: number) => void;
   setReforestationInHa: (v: number) => void;
   setHeatmapEnabled: (v: boolean) => void;
-  setSimulationPlaying: () => void;
+  toggleSimulationPlaying: () => void;
   updateTemperatures: () => void;
   updateCoEmissionsPerCapita: () => void;
   update: () => void;
@@ -83,7 +83,7 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
   setCoEmissionsPerCapita: (emissions) => set({ coEmissionsPerCapita: emissions }),
 
   setForestationPotentials: (potential) => { set({ forestationPotentials: potential }) },
-  setSimulationPlaying:() => set(s => ({ simulationPlaying: !s.simulationPlaying })),
+  toggleSimulationPlaying:() => set(s => ({ simulationPlaying: !s.simulationPlaying })),
 
   setYear: (year: number) => {
     set(state => ({ liveSettings: { ...state.liveSettings, year } }));

@@ -7,9 +7,10 @@ import { CountryInfoPanel } from "./ui/CountryInfoPanel"
 import { SimulationInfoPanel } from "./ui/SimulationInfoPanel"
 import { useLoadData } from "./store/DataProvider"
 import { useSimulationStore } from "./store/SimulationStore"
-import { TippingPointsPanel } from "./ui/TippingPointsPanel"
+
 import { Timeline } from "@mui/icons-material"
 import { TimeLine } from "./ui/TimeLine"
+import { SideControlsPanel } from "./ui/sideControllsPanel"
 
 
 
@@ -68,9 +69,12 @@ export function App() {
       />
     
 
-      <ControlsPanel></ControlsPanel>
+      <SideControlsPanel>
+  <ControlsPanel />
+</SideControlsPanel>
+
       <SimulationInfoPanel></SimulationInfoPanel>
-      <TippingPointsPanel></TippingPointsPanel>
+     
       <TimeLine></TimeLine>
     </div>
   )

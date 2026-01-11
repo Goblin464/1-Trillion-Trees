@@ -35,7 +35,7 @@ export const TippingPointsToast = ({
         active ? tl.current.play() : tl.current.reverse();
     }, [active]);
 
-    return (
+   /* return (
         <div
             ref={ref}
             style={{
@@ -53,5 +53,5 @@ export const TippingPointsToast = ({
         >
              {icon}  {name} ({threshold.toFixed(1)}°C)
         </div>
-    );
+    );*/
 };

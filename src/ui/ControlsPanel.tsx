@@ -16,19 +16,19 @@ export function ControlsPanel() {
   const setReforestationBudget = useSimulationStore((s) => s.setReforestationInHa);
   const setYear = useSimulationStore((s) => s.setYear);
   const setHeatmapEnabled = useSimulationStore((s) => s.setHeatmapEnabled);
-  const setSimulationPlaying = useSimulationStore((s) => s.setSimulationPlaying);
+  const setSimulationPlaying = useSimulationStore((s) => s.toggleSimulationPlaying);
 
 
   return (
     <Panel
       ref={panelRef}
       title="Simulation Controls"
-      defaultCollapsed={true}
+     
       style={{
         width: "280px",
-        position: "absolute",
-        bottom: "15vh",
-        left: "5vh",
+        position: "relative",
+        bottom: "0vh",
+        left: "0vh",
         flexDirection: "column",
       }}
     >

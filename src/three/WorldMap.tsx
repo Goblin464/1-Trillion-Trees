@@ -135,18 +135,16 @@ function fitCameraToWorld(camera: PerspectiveCamera, object: Object3D, viewportS
 }
 
 
-  return (
-    <group>
-      <group ref={worldRef}>{polygons}</group>
-      <group ref={worldRef}>
-        {polygons}
-
-        
-      </group>
-
-      <group ref={treeRef} />
-
+ return (
+  <group>
+    {/* Welt */}
+    <group ref={worldRef}>
+      {polygons}
     </group>
 
-  )
+    {/* Bäume */}
+    <group ref={treeRef} />
+  </group>
+)
+
 }
