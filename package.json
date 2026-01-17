@@ -24,6 +24,8 @@
     "@mui/material": "^7.3.6",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
+    "@reactour/mask": "^1.2.0",
+    "@reactour/tour": "^3.8.0",
     "gsap": "^3.13.0",
     "lucide-react": "^0.561.0",
     "motion": "^12.23.26",

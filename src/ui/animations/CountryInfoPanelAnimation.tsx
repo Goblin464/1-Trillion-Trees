@@ -9,7 +9,7 @@ interface Props {
 
 export function CountryInfoPanelAnimation({ position, children }: Props) {
   const ref = useRef<HTMLDivElement>(null);
-
+  console.log("position x" + position.x)
   useEffect(() => {
     if (!ref.current) return;
 

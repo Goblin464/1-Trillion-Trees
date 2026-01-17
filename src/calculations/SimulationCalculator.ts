@@ -57,10 +57,7 @@ export class SimulationCalculator {
   // CO2 nächstes Jahr
   static calculateNextYearCO2AndEmissions(currentCO2: number, co2GrowthRate: number, globalEmissions: number): { nextCO2: number, nextGlobalEmissions: number } {
     const growthFactor = 1 + co2GrowthRate / 100;
-
     const nextGlobalEmissions = globalEmissions * growthFactor;
-    //const nextGlobalEmissionsGigaTons = nextGlobalEmissions / 1000000000
-    //const deltaPpm = nextGlobalEmissionsGigaTons / 7.81; // 1 ppm ≈ 7,81 Gt CO2
     const nextCO2 = currentCO2 + nextGlobalEmissions;
     return { nextCO2, nextGlobalEmissions };
   }
@@ -71,16 +68,29 @@ export class SimulationCalculator {
   }
 
   // CO2-Absorption durch alle bisher gepflanzten Bäume
-  static applyReforestationEffect(currentCO2: number, totalTreesPlanted: number, forestationPotentials: Record<string, { tco2e: number, ha: number }>): number {
-    const countries = Object.keys(forestationPotentials);
-    const haPerCountry = totalTreesPlanted / countries.length;
+  static applyReforestationEffect(
+    currentCO2: number,
+    totalHa: number,
+    forestationPotentials: Record<string, { tco2e: number; ha: number }>
+  ): number {
     let co2After = currentCO2;
-    for (const country of countries) {
-      const potential = forestationPotentials[country];
-      if (!potential) continue;
-      const absorptionPerHa = potential.tco2e / potential.ha;
-      co2After -= absorptionPerHa * haPerCountry;
+
+    const potentials = Object.values(forestationPotentials);
+
+    const totalPotentialHa = potentials.reduce((sum, p) => sum + p.ha, 0);
+
+    // Mehr als globales Potenzial bringt nichts
+    const effectiveHa = Math.min(totalHa, totalPotentialHa);
+
+    for (const p of potentials) {
+      const absorptionPerHa = p.tco2e / p.ha;
+
+      const share = p.ha / totalPotentialHa;          // prozentualer Anteil
+      const allocatedHa = effectiveHa * share;        // proportional verteilt
+
+      co2After -= absorptionPerHa * allocatedHa;
     }
+
     return co2After;
   }
 

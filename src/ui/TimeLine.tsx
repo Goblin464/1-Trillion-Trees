@@ -1,22 +1,23 @@
-import { useRef, useState, useCallback, useMemo, useEffect } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { useSimulationStore } from "../store/SimulationStore";
 import "./TimeLine.css";
 import { getTippingPointYearsGroups } from "./TippingPointsPanel";
-import { color, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import React from "react";
+
 
 const START_YEAR = 2025;
 const END_YEAR = 2125;
 
 
 
-export function TimeLine() {
+export function TimeLine({ className = "" }) {
     const year = useSimulationStore((s) => s.liveSettings.year);
     const simulationPlaying = useSimulationStore(state => state.simulationPlaying);
     const setYear = useSimulationStore((s) => s.setYear);
     const toggleSimulationPlaying = useSimulationStore((s) => s.toggleSimulationPlaying)
-    const [highlightedTP, setHighlightedTP] = useState<string | null>(null);
     const rafSimulationRef = useRef<number | null>(null);
+
 
 
     const trackRef = useRef<HTMLDivElement>(null);
@@ -107,8 +108,9 @@ export function TimeLine() {
     const showStartYear = playheadX > MIN_DISTANCE;
     const showEndYear = playheadX < trackWidth - MIN_DISTANCE;
 
+
     return (
-        <div className="timeline">
+        <div className={`timeline ${className}`}>
 
             <div
                 ref={trackRef}
@@ -197,7 +199,7 @@ export function TimeLine() {
                     const showTPYear = Math.abs(year - groupYear) >= YEAR_DISTANCE;
 
                     const eventVariants = {
-                        rest: { scale: 1, y: "-50%" ,x:"-50%", backgroundColor: "#008528ff" },
+                        rest: { scale: 1, y: "-50%", x: "-50%", backgroundColor: "#008528ff" },
                         hover: { scale: 1.2 },
                         reached: { scale: 1.3, backgroundColor: "#a00000" }
                     };
@@ -217,16 +219,15 @@ export function TimeLine() {
                                 <motion.div
                                     className="timeline__tooltip"
                                     initial="rest"
-                                    whileHover="hover"
+
                                 >
                                     <div className="tooltip-title">{group.threshold}°C</div>
                                     <div className="tooltip-list">
                                         {group.tippingPoints.map((tp) => (
                                             <div
                                                 key={tp.id}
-                                                className={`tooltip-item ${highlightedTP === tp.id ? "highlighted" : ""}`}
-                                                onMouseEnter={() => setHighlightedTP(tp.id)}
-                                                onMouseLeave={() => setHighlightedTP(null)}
+                                                className={`tooltip-item `}
+
                                             >
                                                 <span className="tooltip-emoji">{tp.icon}</span>
                                                 <span className="tooltip-name">{tp.name}</span>

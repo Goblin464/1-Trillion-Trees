@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo } from "react";
+
 import { useSimulationStore } from "../store/SimulationStore";
-import { TippingPointsToast } from "./animations/TippingPointsToast";
+
 
 
 export const TIPPING_POINTS_GROUPS = [
@@ -60,10 +60,6 @@ export const TIPPING_POINTS_GROUPS = [
     ],
   },
 ];
-
-
-
-
 
 
 export function getTippingPointYearsGroups(): {

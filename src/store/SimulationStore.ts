@@ -17,10 +17,15 @@ type LiveSettings = {
 };
 
 
+type TemperatureMap = Record<string, number>;
+type EmissionsMap = Record<string, number>;
+type ForestationPotentialMap = Record<string, { tco2e: number; ha: number }>;
+
+
 export const INITIAL_YEAR_DATA = {
-  co2: 3_241_150_000_000, // äquivalent to 415ppm
+  co2: 3_295_500_000_000, //  äquivalent to 422.5ppm * 7.8 (umrechnungsfaktor)
   treesPlantedInHa: 0,
-  globalEmissions: 38_598_580_000, // emissions 2025 in t
+  globalEmissions: 37_800_000_000, // emissions 2025 in t
   temperatureIncrease: SimulationCalculator.calculateTemperatureIncrease(3_241_150_000_000),
 };
 
@@ -29,15 +34,25 @@ type SimulationStore = {
   liveSettings: LiveSettings;
   yearlyResult: YearlyData;
 
-  temperatures: Record<string, number>; // ISO3 -> aktualisierte Temperatur
-  baseTemperatures: Record<string, number>; // ISO3 -> Basis-Temperatur
+  temperatures: TemperatureMap; // ISO3 -> aktualisierte Temperatur
+  baseTemperatures: TemperatureMap; // ISO3 -> Basis-Temperatur
 
-  coEmissionsPerCapita: Record<string, number>;
-  baseCoEmissionsPerCapita: Record<string, number>;
+  coEmissionsPerCapita: EmissionsMap
+  baseCoEmissionsPerCapita: EmissionsMap;
 
-  forestationPotentials: Record<string, { tco2e: number; ha: number }>;
+  forestationPotentials: ForestationPotentialMap;
+
+  isHoveringPanel: boolean;
+  panelCountry: any | null;
+  panelPosition: { x: number; y: number } | null;
 
   simulationPlaying: Boolean;
+
+
+  setPanel: (country: any, position: { x: number; y: number }) => void;
+  clearPanel: () => void;
+ 
+
   setTemperatures: (temps: Record<string, number>) => void;
   setBaseTemperatures: (temps: Record<string, number>) => void;
 
@@ -56,103 +71,130 @@ type SimulationStore = {
   update: () => void;
 };
 
-export const useSimulationStore = create<SimulationStore>((set, get) => ({
-  liveSettings: {
-    year: 2025,
-    co2GrowthRate: 1.5,
-    reforestationInHa: 50,
-    heatmapEnabled: false,
-  },
-  allYearlyResults: {},
-  yearlyResult: INITIAL_YEAR_DATA,
 
-  temperatures: {},
-  baseTemperatures: {},
+export const useSimulationStore = create<SimulationStore>((set, get) => {
 
-  coEmissionsPerCapita: {},
-  baseCoEmissionsPerCapita: {},
+  const store = {
+    liveSettings: {
+      year: 2025,
+      co2GrowthRate: 1.5,
+      reforestationInHa: 50,
+      heatmapEnabled: false,
+    },
+    allYearlyResults: {},
+    yearlyResult: INITIAL_YEAR_DATA,
 
-  forestationPotentials: {},
+    temperatures: {},
+    baseTemperatures: {},
 
-  simulationPlaying : false,
+    coEmissionsPerCapita: {},
+    baseCoEmissionsPerCapita: {},
 
-  setBaseTemperatures: (temps) => set({ baseTemperatures: temps }),
-  setTemperatures: (temps) => set({ temperatures: temps }),
+    forestationPotentials: {},
 
-  setBaseCoEmissionsPerCapita: (emissions) => set({ baseCoEmissionsPerCapita: emissions }),
-  setCoEmissionsPerCapita: (emissions) => set({ coEmissionsPerCapita: emissions }),
+    simulationPlaying: false,
 
-  setForestationPotentials: (potential) => { set({ forestationPotentials: potential }) },
-  toggleSimulationPlaying:() => set(s => ({ simulationPlaying: !s.simulationPlaying })),
+    panelCountry: null,
+    panelPosition: null,
+    isHoveringPanel: false,
 
-  setYear: (year: number) => {
-    set(state => ({ liveSettings: { ...state.liveSettings, year } }));
-    get().update();
-  },
+    setPanel: (country: string, position: { x: number; y: number }) => {
+      set({ panelCountry: country, panelPosition: position });
+    },
 
-  setCo2GrowthRate: (value: number) => {
-    set(state => ({ liveSettings: { ...state.liveSettings, co2GrowthRate: value } }));
-    if (get().liveSettings.year > 2025) get().update();
-  },
+    clearPanel: () =>
+      set({ panelCountry: null, panelPosition: null }),
 
-  setReforestationInHa: (value: number) => {
-    set(state => ({ liveSettings: { ...state.liveSettings, reforestationInHa: value } }));
-    if (get().liveSettings.year > 2025) get().update();
-  },
+    setBaseTemperatures: (temps: TemperatureMap) =>
+      set({ baseTemperatures: temps }),
 
-  setHeatmapEnabled: (value: boolean) => {
-    set((state) => ({ liveSettings: { ...state.liveSettings, heatmapEnabled: value } }));
-    if (get().liveSettings.year > 2025) get().update();
-  },
+    setTemperatures: (temps: TemperatureMap) =>
+      set({ temperatures: temps }),
+
+    setBaseCoEmissionsPerCapita: (emissions: EmissionsMap) =>
+      set({ baseCoEmissionsPerCapita: emissions }),
+
+    setCoEmissionsPerCapita: (emissions: EmissionsMap) =>
+      set({ coEmissionsPerCapita: emissions }),
+
+    setForestationPotentials: (potential: ForestationPotentialMap) =>
+      set({ forestationPotentials: potential }),
+
+    toggleSimulationPlaying: () =>
+      set((s) => ({ simulationPlaying: !s.simulationPlaying })),
+
+    setYear: (year: number) => {
+      set((state) => ({ liveSettings: { ...state.liveSettings, year } }));
+      get().update();
+    },
 
 
+    setCo2GrowthRate: (value: number) => {
+      set((state) => ({ liveSettings: { ...state.liveSettings, co2GrowthRate: value } }));
+      if (get().liveSettings.year > 2025) get().update();
+    },
 
-  updateTemperatures: () => {
-    const { baseTemperatures, yearlyResult } = get();
-    const updated: Record<string, number> = {};
-    for (const iso in baseTemperatures) {
-      updated[iso] = baseTemperatures[iso] + yearlyResult.temperatureIncrease;
-    }
-    set({ temperatures: updated });
-  },
+    setReforestationInHa: (value: number) => {
+      set((state) => ({ liveSettings: { ...state.liveSettings, reforestationInHa: value } }));
+      if (get().liveSettings.year > 2025) get().update();
+    },
 
-  updateCoEmissionsPerCapita: () => {
-    const { baseCoEmissionsPerCapita, liveSettings } = get();
-    const updated: Record<string, number> = {};
-    const yearsSinceBase = liveSettings.year - 2025;
-    const growthFactor = 1 + liveSettings.co2GrowthRate / 100;
+    setHeatmapEnabled: (value: boolean) => {
+      set((state) => ({ liveSettings: { ...state.liveSettings, heatmapEnabled: value } }));
+      if (get().liveSettings.year > 2025) get().update();
+    },
 
-    for (const iso in baseCoEmissionsPerCapita) {
-      updated[iso] = baseCoEmissionsPerCapita[iso] * Math.pow(growthFactor, yearsSinceBase);
-    }
-
-    set({ coEmissionsPerCapita: updated });
-  },
-
-  update: () => {
-    const { liveSettings } = get();
-    const results: Record<number, YearlyData> = {};
-    let previous = INITIAL_YEAR_DATA;
-
-    for (let year = 2025; year <= 2125; year++) {
-      if (year > 2025) {
-        previous = SimulationCalculator.simulateYear(
-          previous,
-          liveSettings.co2GrowthRate,
-          liveSettings.reforestationInHa,
-          get().forestationPotentials
-        );
+    updateTemperatures: () => {
+      const { baseTemperatures, yearlyResult } = get();
+      const updated: Record<string, number> = {};
+      for (const iso in baseTemperatures) {
+        updated[iso] = baseTemperatures[iso] + yearlyResult.temperatureIncrease;
       }
-      results[year] = previous;
-    }
+      set({ temperatures: updated });
+    },
 
-    set({
-      yearlyResult: results[liveSettings.year],
-      allYearlyResults: results
-    });
+    updateCoEmissionsPerCapita: () => {
+      const { baseCoEmissionsPerCapita, liveSettings } = get();
+      const updated: Record<string, number> = {};
+      const yearsSinceBase = liveSettings.year - 2025;
+      const growthFactor = 1 + liveSettings.co2GrowthRate / 100;
 
-    get().updateTemperatures();
-    get().updateCoEmissionsPerCapita();
-  },
+      for (const iso in baseCoEmissionsPerCapita) {
+        updated[iso] = baseCoEmissionsPerCapita[iso] * Math.pow(growthFactor, yearsSinceBase);
+      }
 
-}));
+      set({ coEmissionsPerCapita: updated });
+    },
+
+    update: () => {
+      const { liveSettings } = get();
+      const results: Record<number, YearlyData> = {};
+      let previous = INITIAL_YEAR_DATA;
+
+      for (let year = 2025; year <= 2125; year++) {
+        if (year > 2025) {
+          previous = SimulationCalculator.simulateYear(
+            previous,
+            liveSettings.co2GrowthRate,
+            liveSettings.reforestationInHa,
+            get().forestationPotentials
+          );
+        }
+        results[year] = previous;
+      }
+
+      set({
+        yearlyResult: results[liveSettings.year],
+        allYearlyResults: results,
+      });
+
+      get().updateTemperatures();
+      get().updateCoEmissionsPerCapita();
+    },
+  };
+
+  // Direkt am Anfang die Simulation für das Startjahr berechnen
+  setTimeout(() => get().update(), 0);
+
+  return store;
+});

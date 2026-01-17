@@ -27,13 +27,12 @@ type GeoJsonFeatureCollection = {
 interface WorldMapProps {
   geoJson: GeoJsonFeatureCollection;
   temperatures: Record<string, number>;
-  onCountryClick?: (countryProps: any, screenPos: { x: number; y: number }) => void
 }
 
-export function WorldMap({ geoJson, temperatures, onCountryClick }: WorldMapProps) {
+export function WorldMap({ geoJson, temperatures }: WorldMapProps) {
   const worldRef = useRef<Group>(null!)
   const treeRef = useRef<Group>(null!)
-  
+
   const { camera, size } = useThree()
   const perspectiveCamera = camera as PerspectiveCamera
 
@@ -44,18 +43,11 @@ export function WorldMap({ geoJson, temperatures, onCountryClick }: WorldMapProp
     () =>
       geoJson.features.flatMap((feature, index) => {
         const geom = feature.geometry
-        const color = feature.properties?.color as string | undefined
+
 
 
         if (!geom) return []
 
-        const handleClick = (props: any, position: Vector3) => {
-          if (!position) return
-          const vector = position.clone().project(perspectiveCamera)
-          const x = ((vector.x + 1) / 2) * size.width
-          const y = ((-vector.y + 1) / 2) * size.height
-          onCountryClick?.(props, { x, y })
-        }
 
         if (geom.type === "Polygon") {
           return (
@@ -63,8 +55,6 @@ export function WorldMap({ geoJson, temperatures, onCountryClick }: WorldMapProp
               key={index}
               rings={geom.coordinates}
               properties={feature.properties}
-              color={color}
-              onClick={handleClick}
             />
 
           )
@@ -76,8 +66,6 @@ export function WorldMap({ geoJson, temperatures, onCountryClick }: WorldMapProp
               key={`${index}_${i}`}
               rings={poly}
               properties={feature.properties}
-              color={color}
-              onClick={handleClick}
             />
           ))
         }
@@ -96,55 +84,55 @@ export function WorldMap({ geoJson, temperatures, onCountryClick }: WorldMapProp
     treeGroupRef: treeRef
   });
 
- useEffect(() => {
-  if (worldRef.current) {
-    fitCameraToWorld(perspectiveCamera, worldRef.current, size);
+  useEffect(() => {
+    if (worldRef.current) {
+      fitCameraToWorld(perspectiveCamera, worldRef.current, size);
+    }
+  }, [worldRef.current, size, perspectiveCamera]);
+
+
+  function fitCameraToWorld(camera: PerspectiveCamera, object: Object3D, viewportSize: { width: number; height: number }, offset = 1.) {
+    const boundingBox = new Box3().setFromObject(object)
+
+    if (!boundingBox.isEmpty()) {
+      const center = boundingBox.getCenter(new Vector3())
+      const sizeVec = boundingBox.getSize(new Vector3())
+
+      // Berechne die maximale Dimensionen
+      const maxX = sizeVec.x
+      const maxY = sizeVec.y
+
+      // Berechne die Entfernung, sodass alles sichtbar ist, abhängig von FOV und Aspekt
+      const aspect = viewportSize.width / viewportSize.height
+      const fov = camera.fov * (Math.PI / 180) // in Radians
+
+      let distanceY = (maxY / 2) / Math.tan(fov / 2)
+      let distanceX = (maxX / 2) / (Math.tan(fov / 2) * aspect)
+
+      const distance = Math.max(distanceX, distanceY) * offset
+
+      // Kamera auf Z-Achse setzen 
+      camera.position.set(center.x, center.y, distance)
+      camera.lookAt(center)
+
+      // near und far anpassen
+      camera.near = 0.1
+      camera.far = distance * 4
+      camera.updateProjectionMatrix()
+    }
   }
-}, [worldRef.current, size, perspectiveCamera]);
 
 
-function fitCameraToWorld(camera: PerspectiveCamera, object: Object3D, viewportSize: { width: number; height: number }, offset = 1.) {
-  const boundingBox = new Box3().setFromObject(object)
+  return (
+    <group>
+      {/* Welt */}
+      <group ref={worldRef}>
+        {polygons}
+      </group>
 
-  if (!boundingBox.isEmpty()) {
-    const center = boundingBox.getCenter(new Vector3())
-    const sizeVec = boundingBox.getSize(new Vector3())
-
-    // Berechne die maximale Dimensionen
-    const maxX = sizeVec.x
-    const maxY = sizeVec.y
-
-    // Berechne die Entfernung, sodass alles sichtbar ist, abhängig von FOV und Aspekt
-    const aspect = viewportSize.width / viewportSize.height
-    const fov = camera.fov * (Math.PI / 180) // in Radians
-
-    let distanceY = (maxY / 2) / Math.tan(fov / 2)
-    let distanceX = (maxX / 2) / (Math.tan(fov / 2) * aspect)
-
-    const distance = Math.max(distanceX, distanceY) * offset
-
-    // Kamera auf Z-Achse setzen 
-    camera.position.set(center.x, center.y, distance)
-    camera.lookAt(center)
-
-    // near und far anpassen
-    camera.near = 0.1
-    camera.far = distance * 4
-    camera.updateProjectionMatrix()
-  }
-}
-
-
- return (
-  <group>
-    {/* Welt */}
-    <group ref={worldRef}>
-      {polygons}
+      {/* Bäume */}
+      <group ref={treeRef} />
     </group>
-
-    {/* Bäume */}
-    <group ref={treeRef} />
-  </group>
-)
+  )
 
 }

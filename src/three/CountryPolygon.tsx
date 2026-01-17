@@ -1,5 +1,5 @@
-import { Scale } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+
+import { useMemo, useRef} from 'react'
 import {
     Shape,
     ShapeGeometry,
@@ -10,54 +10,32 @@ import {
     Float32BufferAttribute,
     Vector2,
     Color,
-    Vector3,
-    Box3,
     Group,
-    Mesh
+    Mesh,
 } from 'three'
+import { useSimulationStore } from '../store/SimulationStore'
 import gsap from 'gsap'
 
-const DEFAULT_LAND_COLOR = '#1B7319'
+
+const DEFAULT_LAND_COLOR = '#b4c309'
 //const DEFAULT_BORDER_COLOR = '#ffffffff'
 
 export interface CountryPolygonProps {
     rings: number[][][]      // GeoJSON rings
-    color?: string
     properties: any
-    onClick?: (props: any, center: Vector3) => void;
 }
 
 
-export function CountryPolygon({ rings, properties, color, onClick }: CountryPolygonProps) {
-    const originalZRef = useRef<number>(0);
-
+export function CountryPolygon({ rings, properties}: CountryPolygonProps) {
     function lonLatToXY(lon: number, lat: number): Vector2 {
         const x = (lon / 180) * 1.8
         const y = (lat / 90) * 1
         return new Vector2(x, y)
     }
-    function getCenter(): Vector3 {
-        const [outerRing] = rings
-        if (!outerRing || outerRing.length === 0) return new Vector3(0, 0, 0)
-
-        let sumX = 0, sumY = 0
-        outerRing.forEach(([lon, lat]) => {
-            const v = lonLatToXY(lon, lat)
-            sumX += v.x
-            sumY += v.y
-        })
-
-        const n = outerRing.length
-
-        return new Vector3(sumX / n, sumY / n, 0)
-    }
-
-
 
     const shapeGeometry = useMemo(() => {
         const [outerRing] = rings
         if (!outerRing) return null
-
         const shape = new Shape()
 
         outerRing.forEach(([lon, lat], i) => {
@@ -95,67 +73,89 @@ export function CountryPolygon({ rings, properties, color, onClick }: CountryPol
         <group
             ref={groupRef}
             onPointerEnter={(e) => {
-                e.stopPropagation();
-                //save hovered in userData for heatmap
-                const mesh = e.object as Mesh;
-                mesh.userData.isHovered = true;
 
-                if (!groupRef.current || !materialRef.current) return;
-                gsap.killTweensOf(materialRef.current.color);
-              
-                // save color before hover
-                hoverColorRef.current = materialRef.current.color.clone();
-              
+                e.stopPropagation()
+
+                const mesh = e.object as Mesh
+                mesh.userData.isHovered = true
+
+                if (!materialRef.current) {
+
+                    return
+                }
+                gsap.killTweensOf(materialRef.current.color)
+
+                // Hover-Farbe merken
+                hoverColorRef.current = materialRef.current.color.clone()
+
+                // Hover-Far   be animieren
                 gsap.to(materialRef.current.color, {
-                    r: 0.2,
-                    g: 0.9,
+                    r: 10,
+                    g: 1,
                     b: 1,
                     duration: 0.2,
                     overwrite: true,
+                })
+
+                // 👉 Tooltip-Logik (aus onPointerMove)
+
+                const mouseX = e.clientX;
+                const mouseY = e.clientY;
+
+                // Bildschirmgröße
+                const screenWidth = window.innerWidth;
+                // Offset für das Panel
+                const offsetX = 150; // Abstand zur Maus
+                const offsetY = 50;
+
+                // Prüfen, ob die Maus links oder rechts vom Bildschirm ist
+                const panelX = mouseX < screenWidth / 2 ? mouseX + offsetX : mouseX - offsetX;
+                const panelY = mouseY - offsetY; // Panel leicht über der Maus
+                useSimulationStore.getState().setPanel(properties, {
+                    x: panelX,
+                    y: panelY,
                 });
+                //console.log("setting position: " + worldPosition.x)
             }}
 
             onPointerLeave={(e) => {
+                e.stopPropagation()
 
-                e.stopPropagation();
+                const mesh = e.object as Mesh
+                mesh.userData.isHovered = false
 
-                const mesh = e.object as Mesh;
-                mesh.userData.isHovered = false;
+                if (!materialRef.current || !hoverColorRef.current) return
+                gsap.killTweensOf(materialRef.current.color)
 
-                if (!groupRef.current || !materialRef.current || !hoverColorRef.current) return;
-                gsap.killTweensOf(materialRef.current.color);
-
-
-                // Zurück zur Heatmap/Base-Farbe
+                // Farbe zurücksetzen
                 gsap.to(materialRef.current.color, {
                     r: hoverColorRef.current.r,
                     g: hoverColorRef.current.g,
                     b: hoverColorRef.current.b,
-                    duration: 0.0,
+                    duration: 0,
                     overwrite: true,
-                });
-            }}
+                })
 
+                // Tooltip ausblenden
+                if (!useSimulationStore.getState().isHoveringPanel) {
+                    useSimulationStore.getState().clearPanel();
+                }
+
+
+            }}
         >
+
             {/* Landfläche */}
             <mesh
                 geometry={shapeGeometry}
                 userData={{ properties }}
-                onClick={(event) => {
-                    event.stopPropagation()
-                    if (!onClick) return
 
-                    const localCenter = getCenter()
-                    const worldCenter = localCenter.clone()
-                    event.object.localToWorld(worldCenter)
-                    onClick(properties, worldCenter)
-                }}
-            >
-                <meshBasicMaterial
+            ><meshBasicMaterial
                     ref={materialRef}
-                    color={new Color(color ?? DEFAULT_LAND_COLOR)}
+                    color={new Color(DEFAULT_LAND_COLOR)}
                     side={DoubleSide}
                 />
+
             </mesh>
 
             {/* Grenzlinien */}
@@ -163,7 +163,7 @@ export function CountryPolygon({ rings, properties, color, onClick }: CountryPol
                 <lineLoop
                     renderOrder={1}
                     geometry={borderGeometry}
-                    material={new LineBasicMaterial({ color: 0x000000 })}
+                    material={new LineBasicMaterial({ color: "black" })}
                     raycast={() => null}
                 />
             )}

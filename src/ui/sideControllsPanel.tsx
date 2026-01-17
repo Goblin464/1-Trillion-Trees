@@ -1,22 +1,23 @@
 import { useState, useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import { ChevronRight, Settings2 } from "lucide-react";
-import { Settings } from 'lucide-react';
+import {  Settings2 } from "lucide-react";
+
 
 type SideControlsPanelProps = {
   children: React.ReactNode;
+  className: string,
 };
 
-export function SideControlsPanel({ children }: SideControlsPanelProps) {
-  const [open, setOpen] = useState(false);
+export function SideControlsPanel({ children , className = "",}: SideControlsPanelProps) {
+  const [open, setOpen] = useState(true);
   const panelRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
     if (!panelRef.current) return;
 
     gsap.to(panelRef.current, {
-      x: open ? 70 : -300, // Panelbreite
+      x: open ? 0 : -400, // Panelbreite
       duration: 0.5,
       ease: "power3.inOut",
     });
@@ -25,7 +26,7 @@ export function SideControlsPanel({ children }: SideControlsPanelProps) {
   return (
     <>
       {/* TAB / BOX */}
-      <div
+      <div className={`side-controls-panel ${className}`}
         onClick={() => setOpen((o) => !o)}
         style={{
           position: "fixed",
@@ -34,8 +35,8 @@ export function SideControlsPanel({ children }: SideControlsPanelProps) {
           width: "40px",
           height: "120px",
           backgroundColor: open ? "#757575" : "#ffffffff",
-          borderTopRightRadius: "12px",
-          borderBottomRightRadius: "12px",
+          borderTopRightRadius: "20px",
+          borderBottomRightRadius: "20px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

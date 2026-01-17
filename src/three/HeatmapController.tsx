@@ -20,7 +20,7 @@ export function useHeatmap({ group, temperatures }: HeatmapProps) {
             const props = mesh.userData?.properties || {};
             const iso = props.iso || props.ISO3;
             const temperature = iso ? temperatures[iso] ?? 0 : 0;
-            const baseColor = props.color ?? "#1B7319";//;'#ff7003'
+            const baseColor =  "#b4c309";//;'#ff7003'
             (mesh.material as MeshBasicMaterial).color.set(
                 heatmapEnabled ? getHeatmapColor(temperature) : baseColor
             );
@@ -47,7 +47,7 @@ function getHeatmapColor(temp: number): string {
     }
     else if (clamped <= 30) {
         // ⚪ Weiß → Rot (0 → 35)
-        const t = clamped / 35; // 0..1
+        const t = clamped / 30; // 0..1
 
         r = 255;
         g = 255 * (1 - t * 0.85); // langsamer Abfall für viele Abstufungen

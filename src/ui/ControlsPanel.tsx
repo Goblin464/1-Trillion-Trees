@@ -10,25 +10,29 @@ export function ControlsPanel() {
   const panelRef = useRef<HTMLDivElement | null>(null);
 
   const liveSettings = useSimulationStore((s) => s.liveSettings);
-  const simulationPlaying = useSimulationStore((s)=> s.simulationPlaying);
+  const simulationPlaying = useSimulationStore((s) => s.simulationPlaying);
 
   const setCO2 = useSimulationStore((s) => s.setCo2GrowthRate);
   const setReforestationBudget = useSimulationStore((s) => s.setReforestationInHa);
-  const setYear = useSimulationStore((s) => s.setYear);
   const setHeatmapEnabled = useSimulationStore((s) => s.setHeatmapEnabled);
   const setSimulationPlaying = useSimulationStore((s) => s.toggleSimulationPlaying);
 
-
+  function formatMillions(value: number) {
+    if (value >= 1_000_000) {
+      return `${(value / 1_000_000).toFixed(1)} Mio`
+    }
+    return value.toLocaleString()
+  }
   return (
     <Panel
       ref={panelRef}
       title="Simulation Controls"
-     
+      className="tour-controls"
       style={{
         width: "280px",
         position: "relative",
         bottom: "0vh",
-        left: "0vh",
+        left: "7vh",
         flexDirection: "column",
       }}
     >
@@ -39,11 +43,7 @@ export function ControlsPanel() {
             <Switch
               checked={liveSettings.heatmapEnabled}
               onChange={(e) => setHeatmapEnabled(e.target.checked)}
-              color="grey"
-              sx={{
-                ml: 1,
-                mr: 2,
-              }}
+              color="default"
             />
           }
           label="Heatmap"
@@ -58,7 +58,7 @@ export function ControlsPanel() {
           min={-3}
           max={3}
           step={0.1}
-          onChange={(e, val) => setCO2(val as number)}
+          onChange={(_, val) => setCO2(val as number)}
           sx={{
             color: "#757575",
             ml: 1,
@@ -69,13 +69,13 @@ export function ControlsPanel() {
 
       {/* Reforestation Slider */}
       <div style={{ marginBottom: "10px" }}>
-        <label>Forestation: {liveSettings.reforestationInHa}</label>
+        Forestation: {formatMillions(liveSettings.reforestationInHa)} ha
         <Slider
           min={0}
           max={14_000_000}
           step={100}
           value={liveSettings.reforestationInHa}
-          onChange={(e, val) => setReforestationBudget(val as number)}
+          onChange={(_, val) => setReforestationBudget(val as number)}
           sx={{
             color: "grey",
             ml: 1,
@@ -90,7 +90,7 @@ export function ControlsPanel() {
           className="start-button"
           onClick={setSimulationPlaying}
         >
-         {simulationPlaying ? "Pause" : "Start"}
+          {simulationPlaying ? "Pause" : "Start"}
         </button>
       </div>
 

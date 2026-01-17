@@ -4,14 +4,15 @@ type PanelProps = {
   title: string;
   children: React.ReactNode;
   style?: React.CSSProperties;
+  className: string
 };
 
 export const Panel = forwardRef<HTMLDivElement, PanelProps>(
-  ({ title, children, style }, ref) => {
+  ({ title, children, style, className }, ref) => {
     return (
       <div
         ref={ref}
-        className="panel"
+        className={`panel ${className}`} 
         style={{
           ...style,
         }}
