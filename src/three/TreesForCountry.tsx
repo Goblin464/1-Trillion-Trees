@@ -49,10 +49,11 @@ interface UseTreesProps {
 }
 
 export function useTrees({ worldGroupRef, treeGroupRef }: UseTreesProps) {
-  const treeMaterials = useLoader(MTLLoader, '/Lowpoly_tree_sample.mtl')
-  const treeObj = useLoader(OBJLoader, "/Lowpoly_tree_sample.obj", loader => {
-    treeMaterials.preload()
-    loader.setMaterials(treeMaterials)
+  const baseUrl = import.meta.env.BASE_URL;
+  const treeMaterials = useLoader(MTLLoader, `${baseUrl}Lowpoly_tree_sample.mtl`);
+  const treeObj = useLoader(OBJLoader, `${baseUrl}Lowpoly_tree_sample.obj`, loader => {
+    treeMaterials.preload();
+    loader.setMaterials(treeMaterials);
   });
   const treesByIso = useRef<Map<string, Group[]>>(new Map())
   const forestationPotentials = useSimulationStore(s => s.forestationPotentials);
