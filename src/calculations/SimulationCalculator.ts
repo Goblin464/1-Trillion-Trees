@@ -46,7 +46,7 @@ export function calculateTreeObjectsPerCountry(
     console.log("remaining trees" + remainingTrees)
     remainingCountries = nextRound;
 
-    // Falls keine Länder mehr übrig → Abbruch
+    // Falls keine Länder mehr übrig →Abbruch
     if (remainingCountries.length === 0) break;
   }
 

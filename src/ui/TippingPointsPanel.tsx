@@ -59,6 +59,16 @@ export const TIPPING_POINTS_GROUPS = [
       },
     ],
   },
+  {
+    threshold: 6.3,
+    tippingPoints: [
+      {
+        id: "arcitc",
+        name: "Arctic Ice collapse",
+        icon: "🐻‍❄️",
+      },
+    ],
+  },
 ];
 
 

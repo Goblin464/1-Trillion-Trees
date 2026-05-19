@@ -28,7 +28,7 @@ export function TimeLine({ className = "" }) {
 
     const percent = ((year - START_YEAR) / (END_YEAR - START_YEAR)) * 100;
     const lastUpdateRef = useRef<number>(0);
-    const yearDuration = 250; // 500ms = 0,5s pro Jahr
+    const yearDuration = 250; 
 
     const stepSimulation = useCallback((timestamp: number) => {
         const state = useSimulationStore.getState();
@@ -103,7 +103,7 @@ export function TimeLine({ className = "" }) {
     //playhead distance so year display is not stacked
     const trackWidth = trackRef.current?.offsetWidth ?? 0;
     const playheadX = (percent / 100) * trackWidth;
-    const MIN_DISTANCE = 60; // minimale Pixel-Distanz
+    const MIN_DISTANCE = 60; 
 
     const showStartYear = playheadX > MIN_DISTANCE;
     const showEndYear = playheadX < trackWidth - MIN_DISTANCE;
@@ -145,7 +145,7 @@ export function TimeLine({ className = "" }) {
                 onPointerCancel={() => setDragging(false)}
 
             >
-                {/* Start / End Labels */}
+               
                 <div
                     className="timeline__label timeline__label--start"
                     style={{ opacity: showStartYear ? 1 : 0 }}
@@ -161,19 +161,19 @@ export function TimeLine({ className = "" }) {
                 </div>
 
 
-                {/* Progress */}
+       
                 <div
                     className={`timeline__progress ${dragging ? "timeline__progress--dragging" : ""}`}
                     style={{ width: `${percent}%` }}
                 />
 
-                {/* Playhead */}
+          
                 <div
                     className={`timeline__playhead ${dragging ? "timeline__playhead--active" : ""}`}
                     style={{ left: `${percent}%` }}
                 />
 
-                {/* Aktuelles Jahr */}
+                
                 <div
                     className="timeline__current-year"
                     style={{ left: `${percent}%` }}
@@ -183,8 +183,8 @@ export function TimeLine({ className = "" }) {
 
 
 
-                {/* Tipping Points (gruppiert) */}
-                {/* Tipping Points (gruppiert) */}
+                
+                {/* Tipping Points gruppiert */}
                 {tippingPointsWithYearGroups.map((group) => {
                     const groupYear = group.tippingPoints.find(tp => tp.year)?.year;
                     if (!groupYear) return null;

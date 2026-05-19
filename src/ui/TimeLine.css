@@ -7,7 +7,7 @@
     z-index: 1000;
 }
 
-/* Year label */
+
 .timeline__year {
     font-size: 14px;
     color: #aaa;
@@ -15,7 +15,7 @@
     user-select: none;
 }
 
-/* Base track */
+
 .timeline__track {
     position: relative;
     width: 100%;
@@ -25,7 +25,6 @@
     cursor: pointer;
 }
 
-/* Progress (visited part) */
 .timeline__progress {
     position: absolute;
     left: 0;
@@ -38,7 +37,7 @@
     
 }
 
-/* Disable transition while dragging */
+
 .timeline__progress--dragging {
     transition: none;
 }
@@ -59,14 +58,13 @@
     z-index: 2;
 }
 
-/* Playhead active */
 .timeline__playhead--active {
     transform: translate(-50%, -50%) scale(1.2);
     border-left-color: #6e6e6e;
     cursor: grabbing;
 }
 
-/* Fullscreen drag capture */
+
 .timeline__drag-overlay {
     position: fixed;
     inset: 0;
@@ -102,8 +100,11 @@
 
   background: rgba(255, 255, 255, 0.9);
   color: black;
-  padding: 10px 14px;
-  border-radius: 18px;
+
+ padding: 4px 8px;
+  border-radius: 15px;
+  font-size: 0.75rem;
+  gap: 0.25rem;
 
   opacity: 0;
   pointer-events: none;
@@ -111,9 +112,10 @@
 
   display: flex;
   flex-direction: column;
-  align-items: center; /* 👈 Titel bleibt mittig */
-  gap: 0.75rem;
+  align-items: center;
+    
 }
+
 
 .timeline__event:hover,
 .timeline__event:has(.timeline__tooltip:hover) {
@@ -136,7 +138,7 @@
 
 .tooltip-list {
   display: flex;
-  flex-direction: column; /* 👈 untereinander */
+  flex-direction: column; 
   gap: 0.5rem;
   width: 100%;
 }

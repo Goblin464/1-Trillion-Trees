@@ -78,7 +78,7 @@ export const useSimulationStore = create<SimulationStore>((set, get) => {
     liveSettings: {
       year: 2025,
       co2GrowthRate: 1.5,
-      reforestationInHa: 50,
+      reforestationInHa: 0,
       heatmapEnabled: false,
     },
     allYearlyResults: {},

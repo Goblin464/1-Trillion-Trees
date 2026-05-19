@@ -25,7 +25,7 @@ export function SideControlsPanel({ children , className = "",}: SideControlsPan
 
   return (
     <>
-      {/* TAB / BOX */}
+      
       <div className={`side-controls-panel ${className}`}
         onClick={() => setOpen((o) => !o)}
         style={{
@@ -70,7 +70,7 @@ export function SideControlsPanel({ children , className = "",}: SideControlsPan
         />
       </div>
 
-      {/* PANEL */}
+      
       <div
         ref={panelRef}
         style={{

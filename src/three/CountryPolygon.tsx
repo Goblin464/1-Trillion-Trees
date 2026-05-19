@@ -18,7 +18,7 @@ import gsap from 'gsap'
 
 
 const DEFAULT_LAND_COLOR = '#b4c309'
-//const DEFAULT_BORDER_COLOR = '#ffffffff'
+
 
 export interface CountryPolygonProps {
     rings: number[][][]      // GeoJSON rings
@@ -88,7 +88,7 @@ export function CountryPolygon({ rings, properties}: CountryPolygonProps) {
                 // Hover-Farbe merken
                 hoverColorRef.current = materialRef.current.color.clone()
 
-                // Hover-Far   be animieren
+                
                 gsap.to(materialRef.current.color, {
                     r: 10,
                     g: 1,
@@ -97,25 +97,25 @@ export function CountryPolygon({ rings, properties}: CountryPolygonProps) {
                     overwrite: true,
                 })
 
-                // 👉 Tooltip-Logik (aus onPointerMove)
+                
 
                 const mouseX = e.clientX;
                 const mouseY = e.clientY;
 
-                // Bildschirmgröße
+                
                 const screenWidth = window.innerWidth;
-                // Offset für das Panel
+             
                 const offsetX = 150; // Abstand zur Maus
                 const offsetY = 50;
 
-                // Prüfen, ob die Maus links oder rechts vom Bildschirm ist
+              
                 const panelX = mouseX < screenWidth / 2 ? mouseX + offsetX : mouseX - offsetX;
-                const panelY = mouseY - offsetY; // Panel leicht über der Maus
+                const panelY = mouseY - offsetY; 
                 useSimulationStore.getState().setPanel(properties, {
                     x: panelX,
                     y: panelY,
                 });
-                //console.log("setting position: " + worldPosition.x)
+                
             }}
 
             onPointerLeave={(e) => {
@@ -145,7 +145,7 @@ export function CountryPolygon({ rings, properties}: CountryPolygonProps) {
             }}
         >
 
-            {/* Landfläche */}
+           
             <mesh
                 geometry={shapeGeometry}
                 userData={{ properties }}
@@ -158,7 +158,7 @@ export function CountryPolygon({ rings, properties}: CountryPolygonProps) {
 
             </mesh>
 
-            {/* Grenzlinien */}
+       
             {borderGeometry && (
                 <lineLoop
                     renderOrder={1}

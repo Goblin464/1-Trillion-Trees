@@ -17,7 +17,7 @@ export const Panel = forwardRef<HTMLDivElement, PanelProps>(
           ...style,
         }}
       >
-        {/* Header */}
+       
         <div
           style={{
             display: "flex",
@@ -36,7 +36,7 @@ export const Panel = forwardRef<HTMLDivElement, PanelProps>(
           </h2>
         </div>
 
-        {/* Content – IMMER sichtbar */}
+       
         <div
           style={{
             marginTop: "0.5rem",

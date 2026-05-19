@@ -38,26 +38,26 @@ function getHeatmapColor(temp: number): string {
     let r = 0, g = 0, b = 0;
 
     if (clamped <= 0) {
-        // 🔵 Dunkelblau → Weiß (-20 → 0)
-        const t = (clamped - min) / (0 - min); // 0..1
+        //  Dunkelblau -> Weiß (-20 .. 0)
+        const t = (clamped - min) / (0 - min); 
 
         r = 255 * t;
         g = 255 * t;
-        b = 150 + 105 * t; // von dunklem Blau zu Weiß
+        b = 150 + 105 * t; 
     }
     else if (clamped <= 30) {
-        // ⚪ Weiß → Rot (0 → 35)
-        const t = clamped / 30; // 0..1
+        //  Weiß -> Rot (0 .. 35)
+        const t = clamped / 30; 
 
         r = 255;
-        g = 255 * (1 - t * 0.85); // langsamer Abfall für viele Abstufungen
+        g = 255 * (1 - t * 0.85); 
         b = 255 * (1 - t);
     }
     else {
-        // 🔴 Rot → Dunkelrot (35 → 45)
-        const t = (clamped - 35) / 10; // 0..1
+        //  Rot -> Dunkelrot (35 .. 45)
+        const t = (clamped - 35) / 10; 
 
-        r = 180 - t * 80; // 180 → 100 (dunkles Rot)
+        r = 180 - t * 80; 
         g = 0;
         b = 0;
     }

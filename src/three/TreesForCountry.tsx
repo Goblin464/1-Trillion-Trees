@@ -7,12 +7,9 @@ import { useSimulationStore } from "../store/SimulationStore";
 import { MTLLoader } from "three/examples/jsm/Addons.js";
 import { calculateTreeObjectsPerCountry } from "../calculations/SimulationCalculator";
 
-// --- Zufälliger Punkt innerhalb Mesh mit Raycasting ---
 function getRandomPointOnMesh(mesh: Mesh): Vector3 {
   const geom = mesh.geometry as BufferGeometry;
 
-
-  // Bounding Box
   geom.computeBoundingBox();
   const box = geom.boundingBox!;
   const min = box.min;
@@ -22,7 +19,7 @@ function getRandomPointOnMesh(mesh: Mesh): Vector3 {
   let point = new Vector3();
   let attempts = 0;
 
-  while (attempts < 100) { // max 100 Versuche
+  while (attempts < 100) { 
     attempts++;
 
 

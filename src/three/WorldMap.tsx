@@ -36,9 +36,6 @@ export function WorldMap({ geoJson, temperatures }: WorldMapProps) {
   const { camera, size } = useThree()
   const perspectiveCamera = camera as PerspectiveCamera
 
-  // -----------------------------------
-  // Building Map
-  // -----------------------------------
   const polygons = useMemo(
     () =>
       geoJson.features.flatMap((feature, index) => {
@@ -98,24 +95,22 @@ export function WorldMap({ geoJson, temperatures }: WorldMapProps) {
       const center = boundingBox.getCenter(new Vector3())
       const sizeVec = boundingBox.getSize(new Vector3())
 
-      // Berechne die maximale Dimensionen
+
       const maxX = sizeVec.x
       const maxY = sizeVec.y
 
-      // Berechne die Entfernung, sodass alles sichtbar ist, abhängig von FOV und Aspekt
       const aspect = viewportSize.width / viewportSize.height
-      const fov = camera.fov * (Math.PI / 180) // in Radians
+      const fov = camera.fov * (Math.PI / 180)
 
       let distanceY = (maxY / 2) / Math.tan(fov / 2)
       let distanceX = (maxX / 2) / (Math.tan(fov / 2) * aspect)
 
       const distance = Math.max(distanceX, distanceY) * offset
 
-      // Kamera auf Z-Achse setzen 
+
       camera.position.set(center.x, center.y, distance)
       camera.lookAt(center)
 
-      // near und far anpassen
       camera.near = 0.1
       camera.far = distance * 4
       camera.updateProjectionMatrix()
@@ -125,12 +120,9 @@ export function WorldMap({ geoJson, temperatures }: WorldMapProps) {
 
   return (
     <group>
-      {/* Welt */}
       <group ref={worldRef}>
         {polygons}
       </group>
-
-      {/* Bäume */}
       <group ref={treeRef} />
     </group>
   )
